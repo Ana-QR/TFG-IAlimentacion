@@ -10,14 +10,14 @@ export default defineConfig({
       require('autoprefixer')
     ]
   },
-  server: {
-    proxy: {
-      '/api': {
-        target: 'https://ialimentacion.onrender.com',
-        changeOrigin: true,
-        secure: false,
-      }
-    }
-  }
+  // server: {
+  //   proxy: {
+  //     '/api': {
+  //       target: 'https://ialimentacion.onrender.com',
+  //       changeOrigin: true,
+  //       secure: false,
+  //     }
+  //   }
+  // }
 }
 })
