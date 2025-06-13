@@ -29,6 +29,35 @@ const Sidebar = ({ isOpen, onHistorialActualizado }) => {
     }
   };
 
+  const eliminarProducto = async (nombreProducto) => {
+  if (!token) {
+    alert("Debes iniciar sesión para borrar productos.");
+    return;
+  }
+
+  try {
+    const res = await fetch("http://localhost:3001/api/historial/remove", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ nombreProducto }),
+    });
+
+    if (!res.ok) {
+      console.error("Error al borrar producto:", await res.text());
+      return;
+    }
+
+    // Elimina localmente tras éxito
+    setProductos((prev) => prev.filter((p) => p.nombre !== nombreProducto));
+  } catch (err) {
+    console.error("Error al borrar producto:", err);
+  }
+};
+
+
   useEffect(() => {
     cargarHistorial();
   }, [token]);

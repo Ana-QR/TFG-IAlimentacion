@@ -35,9 +35,23 @@ IAlimentación es una aplicación web que optimiza la planificación de la compr
 ---
 
 ## 📷 Capturas de pantalla
-![alt text](image.png)
+![alt text](/frontend/src/assets/Inicio.png)
 
+![alt text](/frontend/src/assets/Inicio2.png)
+![alt text](/frontend/src/assets/Inicio3.png)
 
+![alt text](/frontend/src/assets/Recetas.png)
+
+![alt text](/frontend/src/assets/Recetas2.png)
+
+![alt text](/frontend/src/assets/Recomendaciones.png)
+![alt text](/frontend/src/assets/Recomendaciones2.png)
+
+![alt text](/frontend/src/assets/Registro.png)
+
+![alt text](/frontend/src/assets/Registro2.png)
+
+![alt text](/frontend/src/assets/Perfil.png)
 ---
 
 ## 📦 Instalación local
