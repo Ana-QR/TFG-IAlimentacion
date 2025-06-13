@@ -25,7 +25,7 @@ const Recomendaciones = () => {
       return;
     }
 
-    fetch(`http://localhost:3001/api/items/lista/${idLista}`, {
+    fetch(`${import.meta.env.VITE_API_URL}/api/items/lista/${idLista}`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())
@@ -43,7 +43,7 @@ const Recomendaciones = () => {
   useEffect(() => {
     if (!idLista || !token) return;
 
-    fetch('http://localhost:3001/api/recomendaciones', {
+    fetch('${import.meta.env.VITE_API_URL}/api/recomendaciones', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -67,7 +67,7 @@ const Recomendaciones = () => {
     setLoading(true);
 
     const fetchIA = async (preferencias) => {
-      const res = await fetch('http://localhost:3001/api/recomendaciones/generar', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/recomendaciones/generar`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

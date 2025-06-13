@@ -16,7 +16,7 @@ const Recetas = () => {
   const token = localStorage.getItem('token');
 
   const cargarRecetas = () => {
-    fetch('http://localhost:3001/api/recetas/desde-historial', {
+    fetch(`${import.meta.env.VITE_API_URL}/api/recetas/desde-historial`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

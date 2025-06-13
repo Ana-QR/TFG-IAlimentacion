@@ -11,7 +11,7 @@ const Sidebar = ({ isOpen, onHistorialActualizado }) => {
     if (!token) return;
 
     try {
-      const res = await fetch('http://localhost:3001/api/historial', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/historial`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -20,7 +20,7 @@ const Sidebar = ({ isOpen, onHistorialActualizado }) => {
         setProductos([]);
         return;
       }
-
+ 
       const data = await res.json();
       setProductos(Array.isArray(data) ? data : []);
     } catch (err) {
@@ -36,7 +36,7 @@ const Sidebar = ({ isOpen, onHistorialActualizado }) => {
   }
 
   try {
-    const res = await fetch("http://localhost:3001/api/historial/remove", {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/historial/remove`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

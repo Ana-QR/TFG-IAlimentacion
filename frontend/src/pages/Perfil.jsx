@@ -13,7 +13,7 @@ const Perfil = () => {
   useEffect(() => {
     if (!token) return;
     axios
-      .get('http://localhost:3001/api/usuario/perfil', {
+      .get(`${import.meta.env.VITE_API_URL}/api/usuario/perfil`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => {
@@ -26,7 +26,7 @@ const Perfil = () => {
   const guardarCambios = () => {
     axios
       .put(
-        'http://localhost:3001/api/usuario/perfil',
+        `${import.meta.env.VITE_API_URL}/api/usuario/perfil`,
         { nombre: nuevoNombre },
         { headers: { Authorization: `Bearer ${token}` } }
       )
@@ -40,7 +40,7 @@ const Perfil = () => {
   const cambiarContraseña = () => {
     axios
       .put(
-        'http://localhost:3001/api/usuario/cambiar-password',
+        `${import.meta.env.VITE_API_URL}/api/usuario/cambiar-password`,
         { contraseñaActual, nuevaContraseña },
         { headers: { Authorization: `Bearer ${token}` } }
       )
@@ -51,7 +51,7 @@ const Perfil = () => {
   const recuperarContraseña = () => {
     axios
       .post(
-        'http://localhost:3001/api/usuario/recuperar-password',
+        `${import.meta.env.VITE_API_URL}/api/usuario/recuperar-password`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       )

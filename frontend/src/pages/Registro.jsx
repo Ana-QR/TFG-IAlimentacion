@@ -58,13 +58,13 @@ const Registro = () => {
     try {
       let res, successMessage
       if (modo === 'inicio') {
-        res = await axios.post('http://localhost:3001/api/auth/login', {
+        res = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/login`, {
           email: formulario.email,
           password: formulario.contraseña
         })
         successMessage = `Bienvenid@, ${res.data.user.nombre}`
       } else {
-        res = await axios.post('http://localhost:3001/api/auth/registro', {
+        res = await axios.post('${import.meta.env.VITE_API_URL}/api/auth/registro', {
           nombre: formulario.nombre,
           email: formulario.email,
           password: formulario.contraseña
@@ -78,7 +78,7 @@ const Registro = () => {
 
       // Llama a /me para obtener el usuario real autenticado
       try {
-        const userResponse = await axios.get('http://localhost:3001/api/auth/me', {
+        const userResponse = await axios.get(`${import.meta.env.VITE_API_URL}/api/auth/me`, {
           headers: { Authorization: `Bearer ${res.data.token}` }
         });
 
@@ -117,7 +117,7 @@ const Registro = () => {
 
     try {
       await axios.post(
-        'http://localhost:3001/api/auth/forgot-password', // ✅ Ruta corregida
+        `${import.meta.env.VITE_API_URL}/api/auth/forgot-password`, // ✅ Ruta corregida
         { email: formulario.email }
       );
 

@@ -14,7 +14,7 @@ const ListaCompra = () => {
     message: '',
     type: 'error'
   });
-  const API_URL = 'http://localhost:3001/api/items';
+  const API_URL = `${import.meta.env.VITE_API_URL}/api/items`;
   const cargarHistorial = useHistorial();
   const token = localStorage.getItem('token');
 
@@ -90,7 +90,7 @@ const ListaCompra = () => {
     }
 
     try {
-      const res = await fetch("http://localhost:3001/api/historial/add", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/historial/add`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -135,7 +135,7 @@ const ListaCompra = () => {
     if (!items.length || !listaId || !token) return;
     setCargandoIA(true);
     try {
-      const res = await fetch('http://localhost:3001/api/ia/mensaje-recomendacion', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/ia/mensaje-recomendacion`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
