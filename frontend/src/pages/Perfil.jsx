@@ -1,19 +1,42 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { FiKey, FiMail, FiCheckCircle, FiXCircle } from 'react-icons/fi';
 
 const Perfil = () => {
+  const [email, setEmail] = useState('');
   const [oldPass, setOldPass] = useState('');
   const [newPass, setNewPass] = useState('');
   const [confirmPass, setConfirmPass] = useState('');
   const [popup, setPopup] = useState({ visible: false, message: '', type: 'success' });
 
-  const email = localStorage.getItem('username');
   const token = localStorage.getItem('token');
 
   const mostrarPopup = (message, type = 'success') => {
     setPopup({ visible: true, message, type });
     setTimeout(() => setPopup({ visible: false, message: '', type: 'success' }), 3000);
   };
+
+  // ✅ Cargar email real desde el backend
+  useEffect(() => {
+    const obtenerUsuario = async () => {
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/me`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const data = await res.json();
+        if (res.ok && data.email) {
+          setEmail(data.email);
+        }
+      } catch (err) {
+        console.error('Error al obtener el email:', err);
+      }
+    };
+
+    if (token) {
+      obtenerUsuario();
+    }
+  }, [token]);
 
   const cambiarContraseña = async () => {
     if (!oldPass || !newPass || !confirmPass) {
