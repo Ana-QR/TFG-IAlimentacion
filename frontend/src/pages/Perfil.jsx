@@ -44,23 +44,23 @@ const Perfil = () => {
     }
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/usuario/actualizar-nombre`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/usuario/perfil`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ nuevoNombre: nombre }),
+        body: JSON.stringify({ nombre }),
       });
 
       const data = await res.json();
       if (!res.ok) {
-        mostrarPopup(data.error || 'No se pudo actualizar el nombre.', 'error');
+        mostrarPopup(data.error || 'Error al actualizar nombre.', 'error');
         return;
       }
 
-      mostrarPopup('Nombre actualizado correctamente.');
       localStorage.setItem('username', nombre);
+      mostrarPopup('Nombre actualizado correctamente.');
     } catch (err) {
       mostrarPopup('Error al conectar con el servidor.', 'error');
     }
