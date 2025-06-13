@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
-import { FiKey, FiMail, FiCheckCircle, FiXCircle } from 'react-icons/fi';
+import {
+  FiKey, FiMail, FiCheckCircle, FiXCircle, FiUser,
+} from 'react-icons/fi';
 
 const Perfil = () => {
   const [nombre, setNombre] = useState('');
@@ -16,26 +18,26 @@ const Perfil = () => {
     setTimeout(() => setPopup({ visible: false, message: '', type: 'success' }), 3000);
   };
 
+  // Cargar perfil
   useEffect(() => {
-    const obtenerUsuario = async () => {
+    const fetchPerfil = async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/me`, {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/usuario/perfil`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
         if (res.ok) {
-          setNombre(data.nombre || '');
-          setEmail(data.email || '');
+          setNombre(data.nombre);
+          setEmail(data.email);
+          localStorage.setItem('username', data.nombre);
         }
       } catch (err) {
-        console.error('Error al obtener el usuario:', err);
+        console.error('Error al cargar perfil:', err);
       }
     };
 
-    if (token) {
-      obtenerUsuario();
-    }
-  }, [token]);
+    fetchPerfil();
+  }, []);
 
   const actualizarNombre = async () => {
     if (!nombre.trim()) {
@@ -77,13 +79,13 @@ const Perfil = () => {
     }
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/update-password`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/usuario/cambiar-password`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ oldPassword: oldPass, newPassword: newPass }),
+        body: JSON.stringify({ contraseñaActual: oldPass, nuevaContraseña: newPass }),
       });
 
       const data = await res.json();
@@ -103,10 +105,9 @@ const Perfil = () => {
 
   const recuperarContraseña = async () => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/forgot-password`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/usuario/recuperar-password`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       });
 
       const data = await res.json();
@@ -130,18 +131,15 @@ const Perfil = () => {
       <div className="space-y-4">
         <div>
           <label className="text-sm font-medium text-gray-600">Nombre</label>
-          <input
-            type="text"
-            value={nombre}
-            onChange={(e) => setNombre(e.target.value)}
-            className="w-full mt-1 px-4 py-2 border rounded-lg text-sm"
-          />
-          <button
-            onClick={actualizarNombre}
-            className="mt-2 btn btn-secondary w-full text-sm"
-          >
-            Guardar nuevo nombre
-          </button>
+          <div className="flex gap-2 items-center">
+            <input
+              type="text"
+              value={nombre}
+              onChange={(e) => setNombre(e.target.value)}
+              className="w-full mt-1 px-4 py-2 border rounded-lg text-sm"
+            />
+            <button onClick={actualizarNombre} className="btn btn-primary text-xs px-3 py-2">Guardar</button>
+          </div>
         </div>
 
         <div>
