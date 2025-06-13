@@ -4,15 +4,16 @@ const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 
-// Configuración de nodemailer (ajusta con tus datos)
+// Configuración segura de nodemailer
 const transporter = nodemailer.createTransport({
-  service: 'gmail', // o el servicio que uses
+  service: 'gmail',
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
 });
 
+// Obtener perfil del usuario
 const obtenerPerfil = async (req, res) => {
   const userId = req.user?.id_usuario;
   if (!userId) return res.status(401).json({ error: 'No autorizado' });
@@ -35,6 +36,7 @@ const obtenerPerfil = async (req, res) => {
   }
 };
 
+// Actualizar nombre de usuario
 const actualizarPerfil = async (req, res) => {
   const userId = req.user?.id_usuario;
   const { nombre } = req.body;
@@ -57,6 +59,7 @@ const actualizarPerfil = async (req, res) => {
   }
 };
 
+// Cambiar contraseña con la actual
 const cambiarPassword = async (req, res) => {
   const userId = req.user?.id_usuario;
   const { contraseñaActual, nuevaContraseña } = req.body;
@@ -67,8 +70,9 @@ const cambiarPassword = async (req, res) => {
 
   try {
     const usuario = await prisma.usuario.findUnique({ where: { id_usuario: userId } });
-    const valid = await bcrypt.compare(contraseñaActual, usuario.contraseña);
+    if (!usuario) return res.status(404).json({ error: 'Usuario no encontrado' });
 
+    const valid = await bcrypt.compare(contraseñaActual, usuario.contraseña);
     if (!valid) return res.status(400).json({ error: 'La contraseña actual no es correcta' });
 
     const nuevaHash = await bcrypt.hash(nuevaContraseña, 10);
@@ -84,16 +88,51 @@ const cambiarPassword = async (req, res) => {
   }
 };
 
+// Recuperar contraseña olvidada (sin iniciar sesión)
+const recuperarPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ error: 'Debes proporcionar un correo electrónico.' });
+
+    const usuario = await prisma.usuario.findUnique({ where: { email } });
+    if (!usuario) return res.status(404).json({ error: 'No existe un usuario con ese correo.' });
+
+    const nuevaPassword = crypto.randomBytes(6).toString("hex"); // 12 caracteres
+    const hashed = await bcrypt.hash(nuevaPassword, 10);
+
+    await prisma.usuario.update({
+      where: { email },
+      data: { contraseña: hashed },
+    });
+
+    await transporter.sendMail({
+      from: `"IAlimentación" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: 'Recuperación de contraseña - IAlimentación',
+      html: `
+        <p>Hola ${usuario.nombre},</p>
+        <p>Tu nueva contraseña es: <b>${nuevaPassword}</b></p>
+        <p>Te recomendamos cambiarla desde tu perfil una vez accedas.</p>
+      `,
+    });
+
+    res.json({ mensaje: 'Se ha enviado una nueva contraseña a tu correo electrónico.' });
+  } catch (err) {
+    console.error('Error en recuperación de contraseña:', err.message, err);
+    res.status(500).json({ error: 'No se pudo enviar la nueva contraseña. Intenta más tarde.' });
+  }
+};
+
+// Generar nueva contraseña desde el perfil (requiere login)
 const enviarNuevaPasswordPorCorreo = async (req, res) => {
   const userId = req.user?.id_usuario;
-
   if (!userId) return res.status(401).json({ error: 'No autorizado' });
 
   try {
     const usuario = await prisma.usuario.findUnique({ where: { id_usuario: userId } });
     if (!usuario) return res.status(404).json({ error: 'Usuario no encontrado' });
 
-    const nueva = crypto.randomBytes(6).toString("hex"); // 12 caracteres
+    const nueva = crypto.randomBytes(6).toString("hex");
     const nuevaHash = await bcrypt.hash(nueva, 10);
 
     await prisma.usuario.update({
@@ -102,50 +141,19 @@ const enviarNuevaPasswordPorCorreo = async (req, res) => {
     });
 
     await transporter.sendMail({
-      from: process.env.EMAIL_USER,
+      from: `"IAlimentación" <${process.env.EMAIL_USER}>`,
       to: usuario.email,
-      subject: 'Recuperación de contraseña - IAlimentación',
-      text: `Tu nueva contraseña es: ${nueva}`,
-      html: `<p>Tu nueva contraseña es: <b>${nueva}</b></p>`,
+      subject: 'Nueva contraseña generada - IAlimentación',
+      html: `
+        <p>Hola ${usuario.nombre},</p>
+        <p>Tu nueva contraseña es: <b>${nueva}</b></p>
+        <p>Te recomendamos cambiarla desde tu perfil una vez accedas.</p>
+      `,
     });
 
-    res.json({ mensaje: 'Se ha enviado una nueva contraseña por correo' });
+    res.json({ mensaje: 'Nueva contraseña enviada por correo electrónico.' });
   } catch (error) {
-    console.error('Error al enviar nueva contraseña:', error);
-    res.status(500).json({ error: 'Error al enviar nueva contraseña' });
-  }
-};
-
-const recuperarPassword = async (req, res) => {
-  try {
-    const { email } = req.body;
-    if (!email) return res.status(400).json({ error: 'Email requerido' });
-
-    const usuario = await prisma.usuario.findUnique({ where: { email } });
-    if (!usuario) return res.status(404).json({ error: 'Usuario no encontrado' });
-
-    // Genera una nueva contraseña aleatoria
-    const nuevaPassword = Math.random().toString(36).slice(-8);
-    const hashed = await bcrypt.hash(nuevaPassword, 10);
-
-    // Actualiza la contraseña en la base de datos
-    await prisma.usuario.update({
-      where: { email },
-      data: { contraseña: hashed },
-    });
-
-    // Envía el correo con la nueva contraseña
-    await transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to: email,
-      subject: 'Recuperación de contraseña - IAlimentación',
-      text: `Tu nueva contraseña es: ${nuevaPassword}`,
-      html: `<p>Tu nueva contraseña es: <b>${nuevaPassword}</b></p>`,
-    });
-
-    res.json({ message: 'Se ha enviado una nueva contraseña a tu correo.' });
-  } catch (err) {
-    console.error('Error en recuperación de contraseña:', err);
+    console.error('Error al enviar nueva contraseña:', error.message, error);
     res.status(500).json({ error: 'No se pudo enviar la nueva contraseña.' });
   }
 };
@@ -154,6 +162,6 @@ module.exports = {
   obtenerPerfil,
   actualizarPerfil,
   cambiarPassword,
-  enviarNuevaPasswordPorCorreo,
   recuperarPassword,
+  enviarNuevaPasswordPorCorreo,
 };

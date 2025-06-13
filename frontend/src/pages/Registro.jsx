@@ -117,7 +117,7 @@ const Registro = () => {
 
     try {
       await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/auth/forgot-password`, // ✅ Ruta corregida
+        `${import.meta.env.VITE_API_URL}/api/usuario/recuperar-password`,
         { email: formulario.email }
       );
 
@@ -133,6 +133,7 @@ const Registro = () => {
       });
     }
   };
+
 
   return (
     <div className="w-full max-w-md mx-auto px-4 sm:px-6 py-12 space-y-6">
@@ -269,10 +270,10 @@ const Registro = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm px-4">
           <div
             className={`bg-white border rounded-2xl p-6 max-w-md w-full mx-auto text-center animate-bounce-in ${popup.type === 'success'
-                ? 'border-white'
-                : popup.type === 'error'
-                  ? 'border-danger'
-                  : 'border-warning'
+              ? 'border-white'
+              : popup.type === 'error'
+                ? 'border-danger'
+                : 'border-warning'
               }`}
           >
             <div className="flex flex-col items-center space-y-4">
@@ -284,10 +285,10 @@ const Registro = () => {
                 <FiAlertTriangle size={48} className="text-warning animate-pop" />
               )}
               <h2 className={`text-xl font-serif font-semibold ${popup.type === 'success'
-                  ? 'text-primary'
-                  : popup.type === 'error'
-                    ? 'text-danger'
-                    : 'text-warning'
+                ? 'text-primary'
+                : popup.type === 'error'
+                  ? 'text-danger'
+                  : 'text-warning'
                 }`}>
                 {popup.type === 'success'
                   ? '¡Éxito!'
