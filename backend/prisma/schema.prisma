@@ -1,0 +1,97 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  id_usuario       Int              @id @default(autoincrement())
+  nombre           String
+  email            String           @unique
+  contraseña       String
+  fecha_registro   DateTime         @default(now())
+
+  // Relación inversa con ListaCompra
+  listas           ListaCompra[]    @relation("UsuarioListas")
+  // Relación con Recomendacion
+  recomendaciones  Recomendacion[]  @relation("UsuarioRecomendaciones")
+  // Historial de productos
+  historial        Producto[]       @relation("HistorialProductos")
+}
+
+model ListaCompra {
+  id_lista         Int              @id @default(autoincrement())
+  nombre           String
+  fecha_creacion   DateTime         @default(now())
+  id_usuario       Int
+  usuario          Usuario          @relation(fields: [id_usuario], references: [id_usuario], name: "UsuarioListas")
+  detalles         DetalleListaCompra[]
+}
+
+model DetalleListaCompra {
+  id_detalle       Int              @id @default(autoincrement())
+  id_lista         Int
+  lista            ListaCompra      @relation(fields: [id_lista], references: [id_lista])
+  id_producto      Int
+  producto         Producto         @relation(fields: [id_producto], references: [id_producto])
+  cantidad         Int
+}
+
+model Producto {
+  id_producto      Int              @id @default(autoincrement())
+  nombre           String           @unique
+
+  historialUsuarios Usuario[]       @relation("HistorialProductos")
+  detalles         DetalleListaCompra[]
+  ingredientes      IngredienteReceta[]
+  precios          PrecioProducto[]
+}
+
+model IngredienteReceta {
+  id_ingrediente   Int              @id @default(autoincrement())
+  id_receta        Int
+  receta           Receta           @relation(fields: [id_receta], references: [id_receta])
+  id_producto      Int
+  producto         Producto         @relation(fields: [id_producto], references: [id_producto])
+}
+
+model Receta {
+  id_receta        Int              @id @default(autoincrement())
+  nombre           String
+  descripcion      String
+  ingredientes     IngredienteReceta[]
+}
+
+model Recomendacion {
+  id_recomendacion Int              @id @default(autoincrement())
+  id_usuario       Int
+  usuario          Usuario          @relation(fields: [id_usuario], references: [id_usuario], name: "UsuarioRecomendaciones")
+  mensaje          String
+  fecha            DateTime?
+}
+
+model PrecioProducto {
+  id_precio        Int              @id @default(autoincrement())
+  id_producto      Int
+  producto         Producto         @relation(fields: [id_producto], references: [id_producto])
+  id_supermercado  Int
+  supermercado     Supermercado     @relation(fields: [id_supermercado], references: [id_supermercado])
+  precio           Float
+  fecha_actualizacion DateTime?
+}
+
+model Supermercado {
+  id_supermercado  Int              @id @default(autoincrement())
+  nombre           String           @unique
+  precios          PrecioProducto[]
+}

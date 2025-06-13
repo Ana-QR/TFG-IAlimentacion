@@ -1,0 +1,225 @@
+import React, { useEffect, useState } from 'react';
+import {
+  FiArrowRight,
+  FiRefreshCw,
+  FiCheckCircle,
+  FiXCircle,
+  FiAlertTriangle,
+} from 'react-icons/fi';
+
+const Recomendaciones = () => {
+  const [productos, setProductos] = useState([]);
+  const [porPrecio, setPorPrecio] = useState([]);
+  const [porNutricion, setPorNutricion] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [modoIA, setModoIA] = useState('hibrido');
+  const [popup, setPopup] = useState({ visible: false, type: '', message: '', secondary: '' });
+
+  const token = localStorage.getItem('token');
+  const idLista = localStorage.getItem('id_lista');
+
+  // Actualiza productos al cargar lista actual
+  useEffect(() => {
+    if (!idLista || !token) {
+      setProductos([]);
+      return;
+    }
+
+    fetch(`http://localhost:3001/api/items/lista/${idLista}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => res.json())
+      .then((lista) => {
+        const nombres = (lista.detalles || []).map((d) => d.producto.nombre);
+        setProductos(nombres);
+      })
+      .catch((err) => {
+        console.error('Error al obtener productos de lista:', err);
+        setProductos([]);
+      });
+  }, [idLista, token]);
+
+  // Recomendaciones básicas (predefinidas)
+  useEffect(() => {
+    if (!idLista || !token) return;
+
+    fetch('http://localhost:3001/api/recomendaciones', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ id_lista: parseInt(idLista) }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        setPorPrecio(data.supermercadosPrecio || []);
+        setPorNutricion(data.supermercadosNutricion || []);
+      })
+      .catch((err) => {
+        console.error('Error al obtener recomendaciones básicas:', err);
+      });
+  }, [idLista, token]);
+
+  // Recomendaciones IA (calidad-precio y nutrición)
+  useEffect(() => {
+    if (!token || productos.length === 0) return;
+    setLoading(true);
+
+    const fetchIA = async (preferencias) => {
+      const res = await fetch('http://localhost:3001/api/recomendaciones/generar', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ productos, preferencias, modo: modoIA }),
+      });
+      const data = await res.json();
+
+      if (data.fallback) {
+        setPopup({
+          visible: true,
+          type: 'warning',
+          message: 'Gemini no estaba disponible.',
+          secondary: 'Se ha usado OpenAI (GPT-3.5-turbo), que puede implicar costes.',
+        });
+        setTimeout(() => setPopup({ visible: false }), 3000);
+      }
+
+      return data.recomendacion;
+    };
+
+    Promise.all([
+      fetchIA('mejor relación calidad-precio'),
+      fetchIA('mejor valoración nutricional'),
+    ])
+      .then(([iaPrecio, iaNutri]) => {
+        setPorPrecio(productos.map((p) => iaPrecio?.find((r) => r.producto === p)?.supermercado || '—'));
+        setPorNutricion(productos.map((p) => iaNutri?.find((r) => r.producto === p)?.supermercado || '—'));
+      })
+      .catch((err) => {
+        console.error('Error IA recomendaciones:', err);
+        setPopup({
+          visible: true,
+          type: 'error',
+          message: 'No se pudieron generar recomendaciones.',
+          secondary: 'Verifica tu conexión o intenta más tarde.',
+        });
+        setTimeout(() => setPopup({ visible: false }), 3000);
+      })
+      .finally(() => setLoading(false));
+  }, [productos, token, modoIA]);
+
+  return (
+    <div className="flex-1 max-w-5xl mx-auto py-8 px-4 space-y-10">
+      {/* Encabezado */}
+      <div className="flex flex-col items-center space-y-2 text-center">
+        <h1 className="text-2xl sm:text-3xl font-serif text-primary flex items-center gap-2">
+          Recomendaciones de Supermercado
+        </h1>
+        <p className="text-sm sm:text-base text-gray-500">
+          Generadas en función de tu lista de compra
+        </p>
+      </div>
+
+      {/* Selector de modo IA */}
+      <div className="flex justify-end">
+        <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-xl shadow-sm border border-gray-300">
+          <label htmlFor="modo" className="text-sm text-gray-600">Modo IA:</label>
+          <select
+            id="modo"
+            value={modoIA}
+            onChange={(e) => setModoIA(e.target.value)}
+            className="text-sm text-gray-800 bg-transparent focus:outline-none"
+          >
+            <option value="hibrido">Híbrido (Gemini → OpenAI)</option>
+            <option value="gemini">Solo Gemini</option>
+            <option value="openai">Solo OpenAI</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Recomendación por precio */}
+      <div className="bg-gradient-to-br from-gray-100 to-white shadow-lg rounded-3xl p-6 md:p-8 space-y-6 border border-gray-300 animate-fade-in">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <h2 className="text-xl sm:text-2xl font-serif text-secondaryDark">
+            Mejor supermercado por precio
+          </h2>
+          {loading && <FiRefreshCw className="animate-spin text-secondaryDark" size={24} />}
+        </div>
+
+        <div className="space-y-4">
+          {productos.map((p, i) => (
+            <div key={i} className="flex flex-col sm:flex-row justify-between gap-4 bg-white p-4 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition">
+              <div className="flex items-center gap-3">
+                <div className="w-3 h-3 bg-sweetPink rounded-full" />
+                <span className="font-medium text-gray-800">{p}</span>
+              </div>
+              <div className="text-sm text-gray-700 font-semibold">{porPrecio[i]}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Recomendación por nutrición */}
+      <div className="bg-gradient-to-br from-gray-100 to-white shadow-lg rounded-3xl p-6 md:p-8 space-y-6 border border-gray-300 animate-fade-in">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <h2 className="text-xl sm:text-2xl font-seriftext-tertiaryDark">
+            Mejor supermercado por valoración nutricional
+          </h2>
+          {loading && <FiRefreshCw className="animate-spin text-tertiaryDark" size={24} />}
+        </div>
+
+        <div className="space-y-4">
+          {productos.map((p, i) => (
+            <div key={`${i}-nutri`} className="flex flex-col sm:flex-row justify-between gap-4 bg-white p-4 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition">
+              <div className="flex items-center gap-3">
+                <div className="w-3 h-3 bg-primaryStrong rounded-full" />
+                <span className="font-medium text-gray-800">{p}</span>
+              </div>
+              <div className="text-sm text-gray-700 font-semibold">{porNutricion[i]}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Popup de mensaje */}
+      {popup.visible && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
+          <div className={`bg-white border rounded-2xl p-6 w-full max-w-sm mx-4 text-center animate-bounce-in
+          ${popup.type === 'success'
+              ? 'border-primary'
+              : popup.type === 'error'
+                ? 'border-danger'
+                : 'border-warning'
+            }`}>
+            <div className="flex flex-col items-center space-y-4">
+              {popup.type === 'success' ? (
+                <FiCheckCircle size={48} className="text-primary animate-pop" />
+              ) : popup.type === 'error' ? (
+                <FiXCircle size={48} className="text-danger animate-pop" />
+              ) : (
+                <FiAlertTriangle size={48} className="text-warning animate-pop" />
+              )}
+              <h2 className="text-xl font-semibold">
+                {popup.type === 'success'
+                  ? '¡Éxito!'
+                  : popup.type === 'error'
+                    ? '¡Error!'
+                    : '¡Atención!'}
+              </h2>
+              <p className="text-sm text-gray-700">{popup.message}</p>
+              {popup.secondary && (
+                <p className="text-xs text-tertiary">{popup.secondary}</p>
+              )}
+              <p className="text-xs text-gray-400">Este mensaje se cerrará automáticamente.</p>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
+}
+export default Recomendaciones;
