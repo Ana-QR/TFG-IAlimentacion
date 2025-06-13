@@ -5,12 +5,12 @@ const {
   obtenerPerfil,
   actualizarPerfil,
   cambiarPassword,
-  enviarNuevaPasswordPorCorreo
+  recuperarPassword
 } = require("../controllers/usuarioController");
 
 router.get("/perfil", authenticate, obtenerPerfil);
-router.put("/perfil", authenticate, actualizarPerfil); // Aquí es donde se actualiza el nombre
+router.put("/perfil", authenticate, actualizarPerfil);
 router.put("/cambiar-password", authenticate, cambiarPassword);
-router.post("/recuperar-password", authenticate, enviarNuevaPasswordPorCorreo);
+router.post("/recuperar-password", recuperarPassword); // sin token
 
 module.exports = router;

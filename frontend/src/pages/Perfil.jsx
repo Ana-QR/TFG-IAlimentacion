@@ -1,7 +1,5 @@
 import { useEffect, useState } from 'react';
-import {
-  FiKey, FiMail, FiCheckCircle, FiXCircle, FiUser,
-} from 'react-icons/fi';
+import { FiKey, FiMail, FiCheckCircle, FiXCircle } from 'react-icons/fi';
 
 const Perfil = () => {
   const [nombre, setNombre] = useState('');
@@ -18,26 +16,26 @@ const Perfil = () => {
     setTimeout(() => setPopup({ visible: false, message: '', type: 'success' }), 3000);
   };
 
-  // Cargar perfil
   useEffect(() => {
-    const fetchPerfil = async () => {
+    const obtenerUsuario = async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/usuario/perfil`, {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/me`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
         if (res.ok) {
-          setNombre(data.nombre);
-          setEmail(data.email);
-          localStorage.setItem('username', data.nombre);
+          setNombre(data.nombre || '');
+          setEmail(data.email || '');
         }
       } catch (err) {
-        console.error('Error al cargar perfil:', err);
+        console.error('Error al obtener el usuario:', err);
       }
     };
 
-    fetchPerfil();
-  }, []);
+    if (token) {
+      obtenerUsuario();
+    }
+  }, [token]);
 
   const actualizarNombre = async () => {
     if (!nombre.trim()) {
@@ -107,7 +105,8 @@ const Perfil = () => {
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/usuario/recuperar-password`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
       });
 
       const data = await res.json();
@@ -122,6 +121,7 @@ const Perfil = () => {
     }
   };
 
+
   return (
     <div className="max-w-xl mx-auto bg-white p-6 md:p-10 shadow-lg rounded-2xl space-y-6 mt-10 border border-gray-200">
       <h2 className="text-2xl font-serif text-primary mb-4 flex items-center gap-2">
@@ -131,15 +131,18 @@ const Perfil = () => {
       <div className="space-y-4">
         <div>
           <label className="text-sm font-medium text-gray-600">Nombre</label>
-          <div className="flex gap-2 items-center">
-            <input
-              type="text"
-              value={nombre}
-              onChange={(e) => setNombre(e.target.value)}
-              className="w-full mt-1 px-4 py-2 border rounded-lg text-sm"
-            />
-            <button onClick={actualizarNombre} className="btn btn-primary text-xs px-3 py-2">Guardar</button>
-          </div>
+          <input
+            type="text"
+            value={nombre}
+            onChange={(e) => setNombre(e.target.value)}
+            className="w-full mt-1 px-4 py-2 border rounded-lg text-sm"
+          />
+          <button
+            onClick={actualizarNombre}
+            className="mt-2 btn btn-secondary w-full text-sm"
+          >
+            Guardar nuevo nombre
+          </button>
         </div>
 
         <div>
