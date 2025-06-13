@@ -1,314 +1,206 @@
-import React, { useState } from 'react'
-import axios from 'axios'
-import { useNavigate } from 'react-router-dom'
-import { FiCheckCircle, FiXCircle, FiAlertTriangle } from 'react-icons/fi'
-import { motion, AnimatePresence } from 'framer-motion';
-
+import React, { useState } from 'react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import { FiCheckCircle, FiXCircle } from 'react-icons/fi';
 
 const Registro = () => {
-  const [modo, setModo] = useState('inicio')
+  const [modo, setModo] = useState('inicio');
   const [formulario, setFormulario] = useState({
     nombre: '',
     email: '',
     contraseña: '',
     confirmar: '',
     mantenerSesion: false,
-  })
-  const [errores, setErrores] = useState({})
-  const [popup, setPopup] = useState({
-    visible: false,
-    message: '',
-    type: 'success',
-    secondary: ''
-  })
-  const navigate = useNavigate()
+  });
+  const [errores, setErrores] = useState({});
+  const [avisoSesion, setAvisoSesion] = useState('');
+  const [popup, setPopup] = useState({ visible: false, message: '', type: 'success' });
+  const navigate = useNavigate();
 
   const manejarCambio = (e) => {
-    const { name, value, type, checked } = e.target
-    setFormulario(f => ({
+    const { name, value, type, checked } = e.target;
+    setFormulario((f) => ({
       ...f,
-      [name]: type === 'checkbox' ? checked : value
-    }))
-    setErrores(errors => ({ ...errors, [name]: '' }))
-  }
+      [name]: type === 'checkbox' ? checked : value,
+    }));
+  };
+
+  const mostrarPopup = (message, type = 'success') => {
+    setPopup({ visible: true, message, type });
+    setTimeout(() => {
+      setPopup({ visible: false, message: '', type: 'success' });
+    }, 3000);
+  };
 
   const validar = () => {
-    const err = {}
-    if (!/\S+@\S+\.\S+/.test(formulario.email)) err.email = 'Email inválido'
-    if (formulario.contraseña.length < 6) err.contraseña = 'La contraseña debe tener al menos 6 caracteres'
-    if (modo === 'registro' && formulario.contraseña !== formulario.confirmar) err.confirmar = 'Las contraseñas no coinciden'
-    if (modo === 'registro' && formulario.nombre.trim() === '') err.nombre = 'El nombre es obligatorio'
-    return err
-  }
-
-  const mostrarPopup = ({ message, type, secondary = '' }) => {
-    setPopup({ visible: true, message, type, secondary })
-    setTimeout(() => setPopup(p => ({ ...p, visible: false })), 3000)
-  }
+    const err = {};
+    if (modo === 'registro') {
+      if (!formulario.nombre.trim()) err.nombre = 'Introduce un nombre';
+      if (formulario.contraseña !== formulario.confirmar) err.confirmar = 'Las contraseñas no coinciden';
+    }
+    if (!formulario.email.trim()) err.email = 'Introduce un email';
+    if (!formulario.contraseña) err.contraseña = 'Introduce una contraseña';
+    setErrores(err);
+    return Object.keys(err).length === 0;
+  };
 
   const manejarEnvio = async (e) => {
-    e.preventDefault()
-    setPopup({ visible: false, message: '', type: 'success', secondary: '' })
-    const erroresValid = validar()
-    if (Object.keys(erroresValid).length) {
-      setErrores(erroresValid)
-      return
-    }
+    e.preventDefault();
+    if (!validar()) return;
+
+    const endpoint =
+      modo === 'registro'
+        ? `${import.meta.env.VITE_API_URL}/api/auth/register`
+        : `${import.meta.env.VITE_API_URL}/api/auth/login`;
 
     try {
-      let res, successMessage
-      if (modo === 'inicio') {
-        res = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/login`, {
-          email: formulario.email,
-          password: formulario.contraseña
-        })
-        successMessage = `Bienvenid@, ${res.data.user.nombre}`
-      } else {
-        res = await axios.post('${import.meta.env.VITE_API_URL}/api/auth/registro', {
-          nombre: formulario.nombre,
-          email: formulario.email,
-          password: formulario.contraseña
-        })
-        successMessage = 'Registro exitoso. Ya puedes iniciar sesión.'
-        setModo('inicio')
-      }
-
-      // Guarda el token
-      localStorage.setItem('token', res.data.token);
-
-      // Llama a /me para obtener el usuario real autenticado
-      try {
-        const userResponse = await axios.get(`${import.meta.env.VITE_API_URL}/api/auth/me`, {
-          headers: { Authorization: `Bearer ${res.data.token}` }
-        });
-
-        const user = userResponse.data;
-        localStorage.setItem('username', user.nombre);
-      } catch (err) {
-        console.error('Error al cargar los datos del usuario:', err);
-      }
-
-
-      const avisoSec = formulario.mantenerSesion
-        ? ''
-        : 'Aviso: Tu sesión no se mantendrá iniciada después de cerrar el navegador.'
-
-      mostrarPopup({ message: successMessage, type: 'success', secondary: avisoSec })
-      setTimeout(() => navigate('/'), 3000)
-
-      setFormulario({ nombre: '', email: '', contraseña: '', confirmar: '', mantenerSesion: false })
-      setErrores({})
-    } catch (error) {
-      console.error('Error en autenticación:', error)
-      const serverMsg = error.response?.data?.error || 'Ocurrió un error. Inténtalo de nuevo.'
-      mostrarPopup({ message: serverMsg, type: 'error' })
-    }
-  }
-
-  // Nueva función para recuperar contraseña
-  const recuperarContraseña = async () => {
-    if (!formulario.email || !/\S+@\S+\.\S+/.test(formulario.email)) {
-      mostrarPopup({
-        message: 'Por favor, introduce un correo electrónico válido.',
-        type: 'warning'
+      const res = await axios.post(endpoint, {
+        nombre: formulario.nombre,
+        email: formulario.email,
+        contraseña: formulario.contraseña,
       });
-      return;
-    }
 
-    try {
-      await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/auth/forgot-password`, // ✅ Ruta corregida
-        { email: formulario.email }
+      const { token, nombre } = res.data;
+      localStorage.setItem('token', token);
+      localStorage.setItem('username', nombre);
+      if (formulario.mantenerSesion) {
+        setAvisoSesion('');
+      } else {
+        setAvisoSesion('Tu sesión no se mantendrá activa al cerrar el navegador.');
+      }
+
+      mostrarPopup(
+        modo === 'registro'
+          ? 'Registro exitoso. ¡Bienvenido!'
+          : 'Inicio de sesión exitoso',
+        'success'
       );
 
-      mostrarPopup({
-        message: 'Se ha enviado una nueva contraseña a tu correo.',
-        type: 'success'
-      });
-    } catch (err) {
-      const msg = err.response?.data?.error || 'No se pudo enviar la nueva contraseña.';
-      mostrarPopup({
-        message: msg,
-        type: 'error'
-      });
+      setTimeout(() => navigate('/'), 1500);
+    } catch (error) {
+      console.error(error);
+      mostrarPopup(
+        error?.response?.data?.error || 'Error en la autenticación',
+        'error'
+      );
     }
   };
 
   return (
-    <div className="w-full max-w-md mx-auto px-4 sm:px-6 py-12 space-y-6">
-      {/* Botones modo */}
-      <div className="flex justify-center gap-2">
-        <button
-          onClick={() => {
-            setModo('inicio');
-            setErrores({});
-            setPopup({ visible: false, message: '', type: 'success', secondary: '' });
-          }}
-          className={`flex-1 text-sm py-2 rounded-t-xl font-semibold transition ${modo === 'inicio' ? 'bg-sweetPink text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-            }`}
-        >
-          Iniciar sesión
-        </button>
-        <button
-          onClick={() => {
-            setModo('registro');
-            setErrores({});
-            setPopup({ visible: false, message: '', type: 'success', secondary: '' });
-          }}
-          className={`flex-1 text-sm py-2 rounded-t-xl font-semibold transition ${modo === 'registro' ? 'bg-sweetPink text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-            }`}
-        >
-          Registrarse
-        </button>
-      </div>
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 py-12 px-4">
+      <form
+        onSubmit={manejarEnvio}
+        className="bg-white rounded-2xl shadow-lg p-8 max-w-md w-full space-y-6"
+      >
+        <h2 className="text-2xl font-bold text-center text-primary">
+          {modo === 'registro' ? 'Crear cuenta' : 'Iniciar sesión'}
+        </h2>
 
-      {/* Formulario */}
-      <AnimatePresence mode="wait">
-        <motion.form
-          key={modo}
-          onSubmit={manejarEnvio}
-          initial={{ opacity: 0, x: 40 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -40 }}
-          transition={{ duration: 0.3 }}
-          className="bg-white shadow-md rounded-b-2xl border border-gray-200 px-6 py-8 space-y-5"
-        >
-          {modo === 'registro' && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
-              <input
-                name="nombre"
-                value={formulario.nombre}
-                onChange={manejarCambio}
-                className="w-full input rounded-lg"
-                placeholder="Tu nombre"
-              />
-              {errores.nombre && <p className="text-red-600 text-sm">{errores.nombre}</p>}
-            </div>
-          )}
-
+        {modo === 'registro' && (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Correo electrónico</label>
+            <label className="block text-sm font-medium text-gray-700">Nombre</label>
             <input
-              name="email"
-              type="email"
-              value={formulario.email}
+              type="text"
+              name="nombre"
+              value={formulario.nombre}
               onChange={manejarCambio}
-              className="w-full input rounded-lg"
-              placeholder="ejemplo@correo.com"
+              className="input w-full"
             />
-            {errores.email && <p className="text-red-600 text-sm">{errores.email}</p>}
+            {errores.nombre && <p className="text-sm text-red-500">{errores.nombre}</p>}
           </div>
+        )}
 
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Correo</label>
+          <input
+            type="email"
+            name="email"
+            value={formulario.email}
+            onChange={manejarCambio}
+            className="input w-full"
+          />
+          {errores.email && <p className="text-sm text-red-500">{errores.email}</p>}
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Contraseña</label>
+          <input
+            type="password"
+            name="contraseña"
+            value={formulario.contraseña}
+            onChange={manejarCambio}
+            className="input w-full"
+          />
+          {errores.contraseña && <p className="text-sm text-red-500">{errores.contraseña}</p>}
+        </div>
+
+        {modo === 'registro' && (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Contraseña</label>
+            <label className="block text-sm font-medium text-gray-700">Confirmar contraseña</label>
             <input
-              name="contraseña"
               type="password"
-              value={formulario.contraseña}
+              name="confirmar"
+              value={formulario.confirmar}
               onChange={manejarCambio}
-              className="w-full input rounded-lg"
-              placeholder="••••••••"
+              className="input w-full"
             />
-            {errores.contraseña && <p className="text-red-600 text-sm">{errores.contraseña}</p>}
-            {modo === 'inicio' && (
-              <div className="mt-2 text-right">
-                <button
-                  type="button"
-                  className="text-xs text-blue-600 hover:underline"
-                  onClick={recuperarContraseña}
-                  tabIndex={-1}
-                >
-                  He olvidado mi contraseña
-                </button>
-              </div>
-            )}
+            {errores.confirmar && <p className="text-sm text-red-500">{errores.confirmar}</p>}
           </div>
+        )}
 
-          {modo === 'registro' && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Confirmar contraseña</label>
-              <input
-                name="confirmar"
-                type="password"
-                value={formulario.confirmar}
-                onChange={manejarCambio}
-                className="w-full input rounded-lg"
-                placeholder="••••••••"
-              />
-              {errores.confirmar && <p className="text-red-600 text-sm">{errores.confirmar}</p>}
-            </div>
-          )}
-
-          <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between text-sm">
+          <label className="flex items-center space-x-2">
             <input
-              id="mantenerSesion"
-              name="mantenerSesion"
               type="checkbox"
+              name="mantenerSesion"
               checked={formulario.mantenerSesion}
               onChange={manejarCambio}
-              className="h-4 w-4 rounded"
+              className="accent-primary"
             />
-            <label htmlFor="mantenerSesion" className="text-sm text-gray-700">
-              Mantener sesión iniciada (cookies)
-            </label>
-          </div>
+            <span>Mantener sesión iniciada</span>
+          </label>
+        </div>
 
+        {avisoSesion && (
+          <p className="text-xs text-yellow-500 text-center mt-2">{avisoSesion}</p>
+        )}
+
+        <button
+          type="submit"
+          className="w-full bg-primary hover:bg-primaryDark text-white rounded-lg py-2 font-semibold transition-colors"
+        >
+          {modo === 'registro' ? 'Registrarse' : 'Entrar'}
+        </button>
+
+        <div className="text-center">
           <button
-            type="submit"
-            className="w-full py-2 text-sm font-medium bg-primary text-white rounded-lg hover:bg-primaryDark transition"
+            type="button"
+            onClick={() => setModo(modo === 'registro' ? 'inicio' : 'registro')}
+            className="text-sm text-primary hover:underline mt-4"
           >
-            {modo === 'inicio' ? 'Entrar' : 'Crear cuenta'}
+            {modo === 'registro'
+              ? '¿Ya tienes una cuenta? Inicia sesión'
+              : '¿No tienes cuenta? Regístrate'}
           </button>
-        </motion.form>
-      </AnimatePresence>
+        </div>
+      </form>
 
-
-      {/* Popup de respuesta */}
       {popup.visible && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm px-4">
-          <div
-            className={`bg-white border rounded-2xl p-6 max-w-md w-full mx-auto text-center animate-bounce-in ${popup.type === 'success'
-                ? 'border-white'
-                : popup.type === 'error'
-                  ? 'border-danger'
-                  : 'border-warning'
-              }`}
-          >
-            <div className="flex flex-col items-center space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
+          <div className="bg-white border rounded-2xl p-6 max-w-sm w-full text-center">
+            <div className="flex flex-col items-center gap-3">
               {popup.type === 'success' ? (
-                <FiCheckCircle size={48} className="text-primaryStrong animate-pop" />
-              ) : popup.type === 'error' ? (
-                <FiXCircle size={48} className="text-danger animate-pop" />
+                <FiCheckCircle size={40} className="text-green-500" />
               ) : (
-                <FiAlertTriangle size={48} className="text-warning animate-pop" />
+                <FiXCircle size={40} className="text-red-500" />
               )}
-              <h2 className={`text-xl font-serif font-semibold ${popup.type === 'success'
-                  ? 'text-primary'
-                  : popup.type === 'error'
-                    ? 'text-danger'
-                    : 'text-warning'
-                }`}>
-                {popup.type === 'success'
-                  ? '¡Éxito!'
-                  : popup.type === 'error'
-                    ? '¡Error!'
-                    : '¡Atención!'}
-              </h2>
-              <p className="text-sm text-text">{popup.message}</p>
-              {popup.secondary && <p className="text-sm text-tertiary">{popup.secondary}</p>}
-              <p className="text-xs text-tertiary">
-                {popup.type === 'success'
-                  ? 'Serás redirigido en 3 segundos...'
-                  : 'Este mensaje se cerrará automáticamente.'}
-              </p>
+              <p className="text-sm">{popup.message}</p>
             </div>
           </div>
         </div>
       )}
     </div>
-  )
+  );
+};
 
-}
-
-export default Registro
+export default Registro;

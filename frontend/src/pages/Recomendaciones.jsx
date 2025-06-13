@@ -18,7 +18,6 @@ const Recomendaciones = () => {
   const token = localStorage.getItem('token');
   const idLista = localStorage.getItem('id_lista');
 
-  // Actualiza productos al cargar lista actual
   useEffect(() => {
     if (!idLista || !token) {
       setProductos([]);
@@ -39,11 +38,10 @@ const Recomendaciones = () => {
       });
   }, [idLista, token]);
 
-  // Recomendaciones básicas (predefinidas)
   useEffect(() => {
     if (!idLista || !token) return;
 
-    fetch('${import.meta.env.VITE_API_URL}/api/recomendaciones', {
+    fetch(`${import.meta.env.VITE_API_URL}/api/recomendaciones`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -61,7 +59,6 @@ const Recomendaciones = () => {
       });
   }, [idLista, token]);
 
-  // Recomendaciones IA (calidad-precio y nutrición)
   useEffect(() => {
     if (!token || productos.length === 0) return;
     setLoading(true);
@@ -75,6 +72,7 @@ const Recomendaciones = () => {
         },
         body: JSON.stringify({ productos, preferencias, modo: modoIA }),
       });
+
       const data = await res.json();
 
       if (data.fallback) {
@@ -113,7 +111,6 @@ const Recomendaciones = () => {
 
   return (
     <div className="flex-1 max-w-5xl mx-auto py-8 px-4 space-y-10">
-      {/* Encabezado */}
       <div className="flex flex-col items-center space-y-2 text-center">
         <h1 className="text-2xl sm:text-3xl font-serif text-primary flex items-center gap-2">
           Recomendaciones de Supermercado
@@ -123,7 +120,6 @@ const Recomendaciones = () => {
         </p>
       </div>
 
-      {/* Selector de modo IA */}
       <div className="flex justify-end">
         <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-xl shadow-sm border border-gray-300">
           <label htmlFor="modo" className="text-sm text-gray-600">Modo IA:</label>
@@ -140,7 +136,7 @@ const Recomendaciones = () => {
         </div>
       </div>
 
-      {/* Recomendación por precio */}
+      {/* Precio */}
       <div className="bg-gradient-to-br from-gray-100 to-white shadow-lg rounded-3xl p-6 md:p-8 space-y-6 border border-gray-300 animate-fade-in">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <h2 className="text-xl sm:text-2xl font-serif text-secondaryDark">
@@ -162,10 +158,10 @@ const Recomendaciones = () => {
         </div>
       </div>
 
-      {/* Recomendación por nutrición */}
+      {/* Nutrición */}
       <div className="bg-gradient-to-br from-gray-100 to-white shadow-lg rounded-3xl p-6 md:p-8 space-y-6 border border-gray-300 animate-fade-in">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <h2 className="text-xl sm:text-2xl font-seriftext-tertiaryDark">
+          <h2 className="text-xl sm:text-2xl font-serif text-tertiaryDark">
             Mejor supermercado por valoración nutricional
           </h2>
           {loading && <FiRefreshCw className="animate-spin text-tertiaryDark" size={24} />}
@@ -184,11 +180,11 @@ const Recomendaciones = () => {
         </div>
       </div>
 
-      {/* Popup de mensaje */}
+      {/* Popup */}
       {popup.visible && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
           <div className={`bg-white border rounded-2xl p-6 w-full max-w-sm mx-4 text-center animate-bounce-in
-          ${popup.type === 'success'
+            ${popup.type === 'success'
               ? 'border-primary'
               : popup.type === 'error'
                 ? 'border-danger'
@@ -220,6 +216,6 @@ const Recomendaciones = () => {
       )}
     </div>
   );
+};
 
-}
 export default Recomendaciones;

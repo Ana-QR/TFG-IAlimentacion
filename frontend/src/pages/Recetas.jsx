@@ -13,6 +13,7 @@ const Recetas = () => {
   const [recetas, setRecetas] = useState([]);
   const [modoIA, setModoIA] = useState('hibrido');
   const [popup, setPopup] = useState({ visible: false, type: '', message: '', secondary: '' });
+  const location = useLocation();
   const token = localStorage.getItem('token');
 
   const cargarRecetas = () => {
@@ -58,19 +59,16 @@ const Recetas = () => {
   };
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
     if (!token) {
-      setRecetas([]); // Limpiar recetas si no hay sesión
+      setRecetas([]);
       return;
     }
     cargarRecetas();
-  }, [location?.pathname]); // Importante: cambia si navega o cambia usuario
-
+  }, [location.pathname]);
 
   return (
     <section className="max-w-5xl mx-auto pt-4 pb-8 px-4 space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        {/* Botón de recarga */}
         <button
           className="flex items-center gap-2 text-sm text-primary font-medium hover:text-tertiary transition"
           onClick={cargarRecetas}
@@ -78,7 +76,6 @@ const Recetas = () => {
           <FiRefreshCw size={18} /> Generar recetas
         </button>
 
-        {/* Contenedor del modo IA: ahora 100% responsive */}
         <div className="w-full sm:w-fit">
           <div className="bg-white border border-gray-300 rounded-xl shadow-sm px-4 py-2 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
             <label htmlFor="modo" className="text-sm text-gray-600 whitespace-nowrap">Modo IA:</label>
@@ -95,8 +92,6 @@ const Recetas = () => {
           </div>
         </div>
       </div>
-
-
 
       {recetas.length > 0 ? (
         <div className="space-y-6">
