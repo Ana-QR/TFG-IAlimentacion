@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { FiKey, FiMail, FiCheckCircle, FiXCircle } from 'react-icons/fi';
 
 const Perfil = () => {
+  const [nombre, setNombre] = useState('');
   const [email, setEmail] = useState('');
   const [oldPass, setOldPass] = useState('');
   const [newPass, setNewPass] = useState('');
@@ -15,21 +16,19 @@ const Perfil = () => {
     setTimeout(() => setPopup({ visible: false, message: '', type: 'success' }), 3000);
   };
 
-  // ✅ Cargar email real desde el backend
   useEffect(() => {
     const obtenerUsuario = async () => {
       try {
         const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/me`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
-        if (res.ok && data.email) {
-          setEmail(data.email);
+        if (res.ok) {
+          setNombre(data.nombre || '');
+          setEmail(data.email || '');
         }
       } catch (err) {
-        console.error('Error al obtener el email:', err);
+        console.error('Error al obtener el usuario:', err);
       }
     };
 
@@ -37,6 +36,35 @@ const Perfil = () => {
       obtenerUsuario();
     }
   }, [token]);
+
+  const actualizarNombre = async () => {
+    if (!nombre.trim()) {
+      mostrarPopup('El nombre no puede estar vacío.', 'error');
+      return;
+    }
+
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/usuario/actualizar-nombre`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ nuevoNombre: nombre }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        mostrarPopup(data.error || 'No se pudo actualizar el nombre.', 'error');
+        return;
+      }
+
+      mostrarPopup('Nombre actualizado correctamente.');
+      localStorage.setItem('username', nombre);
+    } catch (err) {
+      mostrarPopup('Error al conectar con el servidor.', 'error');
+    }
+  };
 
   const cambiarContraseña = async () => {
     if (!oldPass || !newPass || !confirmPass) {
@@ -100,6 +128,22 @@ const Perfil = () => {
       </h2>
 
       <div className="space-y-4">
+        <div>
+          <label className="text-sm font-medium text-gray-600">Nombre</label>
+          <input
+            type="text"
+            value={nombre}
+            onChange={(e) => setNombre(e.target.value)}
+            className="w-full mt-1 px-4 py-2 border rounded-lg text-sm"
+          />
+          <button
+            onClick={actualizarNombre}
+            className="mt-2 btn btn-secondary w-full text-sm"
+          >
+            Guardar nuevo nombre
+          </button>
+        </div>
+
         <div>
           <label className="text-sm font-medium text-gray-600">Correo electrónico</label>
           <input
