@@ -4,8 +4,9 @@ const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 
+// Configuración de nodemailer (ajusta con tus datos)
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  service: 'gmail', // o el servicio que uses
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
@@ -83,6 +84,38 @@ const cambiarPassword = async (req, res) => {
   }
 };
 
+const enviarNuevaPasswordPorCorreo = async (req, res) => {
+  const userId = req.user?.id_usuario;
+
+  if (!userId) return res.status(401).json({ error: 'No autorizado' });
+
+  try {
+    const usuario = await prisma.usuario.findUnique({ where: { id_usuario: userId } });
+    if (!usuario) return res.status(404).json({ error: 'Usuario no encontrado' });
+
+    const nueva = crypto.randomBytes(6).toString("hex"); // 12 caracteres
+    const nuevaHash = await bcrypt.hash(nueva, 10);
+
+    await prisma.usuario.update({
+      where: { id_usuario: userId },
+      data: { contraseña: nuevaHash },
+    });
+
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: usuario.email,
+      subject: 'Recuperación de contraseña - IAlimentación',
+      text: `Tu nueva contraseña es: ${nueva}`,
+      html: `<p>Tu nueva contraseña es: <b>${nueva}</b></p>`,
+    });
+
+    res.json({ mensaje: 'Se ha enviado una nueva contraseña por correo' });
+  } catch (error) {
+    console.error('Error al enviar nueva contraseña:', error);
+    res.status(500).json({ error: 'Error al enviar nueva contraseña' });
+  }
+};
+
 const recuperarPassword = async (req, res) => {
   try {
     const { email } = req.body;
@@ -91,14 +124,17 @@ const recuperarPassword = async (req, res) => {
     const usuario = await prisma.usuario.findUnique({ where: { email } });
     if (!usuario) return res.status(404).json({ error: 'Usuario no encontrado' });
 
-    const nuevaPassword = crypto.randomBytes(6).toString("hex");
+    // Genera una nueva contraseña aleatoria
+    const nuevaPassword = Math.random().toString(36).slice(-8);
     const hashed = await bcrypt.hash(nuevaPassword, 10);
 
+    // Actualiza la contraseña en la base de datos
     await prisma.usuario.update({
       where: { email },
       data: { contraseña: hashed },
     });
 
+    // Envía el correo con la nueva contraseña
     await transporter.sendMail({
       from: process.env.EMAIL_USER,
       to: email,
@@ -107,7 +143,7 @@ const recuperarPassword = async (req, res) => {
       html: `<p>Tu nueva contraseña es: <b>${nuevaPassword}</b></p>`,
     });
 
-    res.json({ mensaje: 'Se ha enviado una nueva contraseña a tu correo.' });
+    res.json({ message: 'Se ha enviado una nueva contraseña a tu correo.' });
   } catch (err) {
     console.error('Error en recuperación de contraseña:', err);
     res.status(500).json({ error: 'No se pudo enviar la nueva contraseña.' });
@@ -118,5 +154,6 @@ module.exports = {
   obtenerPerfil,
   actualizarPerfil,
   cambiarPassword,
+  enviarNuevaPasswordPorCorreo,
   recuperarPassword,
 };
