@@ -10,7 +10,12 @@ const getItems = async (req, res) => {
     const lista = await prisma.listaCompra.findFirst({
       where: { id_usuario: userId },
       orderBy: { fecha_creacion: "desc" },
-      include: { detalles: { include: { producto: true } } },
+      include: {
+        detalles: {
+          include: { producto: true },
+          orderBy: { id_detalle: "asc" }
+        }
+      },
     });
 
     res.json(lista ? [lista] : []);
@@ -30,7 +35,12 @@ const getListaById = async (req, res) => {
   try {
     const lista = await prisma.listaCompra.findFirst({
       where: { id_lista: listaId, id_usuario: userId },
-      include: { detalles: { include: { producto: true } } },
+      include: {
+        detalles: {
+          include: { producto: true },
+          orderBy: { id_detalle: "asc" }
+        }
+      },
     });
 
     if (!lista) {

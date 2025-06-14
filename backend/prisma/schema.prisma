@@ -39,13 +39,14 @@ model ListaCompra {
 }
 
 model DetalleListaCompra {
-  id_detalle    Int          @id @default(autoincrement())
-  id_lista      Int
-  id_producto   Int
-  cantidad      Int          @default(1)
-  completed     Boolean      @default(false)
-  producto      Producto     @relation(fields: [id_producto], references: [id_producto])
-  lista         ListaCompra  @relation(fields: [id_lista], references: [id_lista])
+  id_detalle   Int      @id @default(autoincrement())
+  id_lista     Int
+  id_producto  Int
+  cantidad     Int
+  completed    Boolean  @default(false)
+
+  producto     Producto @relation(fields: [id_producto], references: [id_producto])
+  lista        ListaCompra @relation(fields: [id_lista], references: [id_lista])
 }
 
 model Producto {
