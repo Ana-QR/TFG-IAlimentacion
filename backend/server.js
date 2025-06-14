@@ -12,14 +12,16 @@ const app = express();
 const allowedOrigins = [
   "http://localhost:5173",
   "https://ialimentacion.vercel.app",
+  "https://ialimentacion-pt90mldnb-ana-qrs-projects.vercel.app"
 ];
 
 // ✅ Middleware CORS
 app.use(cors({
-  origin: function (origin, callback) {
+  origin: (origin, callback) => {
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
+      console.error("Origen bloqueado por CORS:", origin);
       callback(new Error("Origen no permitido por CORS"));
     }
   },
