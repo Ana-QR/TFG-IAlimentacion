@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const authenticate = require("../middleware/authMiddleware");
+
 const {
   getItems,
   addItem,
@@ -9,6 +10,7 @@ const {
   addItemToExistingList,
   updateListaNombre,
   deleteProducto,
+  toggleCompleted, // ✅ Nuevo controlador
 } = require("../controllers/itemsController");
 
 // ✅ Obtener todas las listas del usuario autenticado
@@ -25,6 +27,9 @@ router.post("/lista/:id/item", authenticate, addItemToExistingList);
 
 // ✅ Editar nombre de una lista
 router.put("/lista/:id", authenticate, updateListaNombre);
+
+// ✅ Marcar/desmarcar un producto como completado (nuevo)
+router.put("/toggle/:id", authenticate, toggleCompleted);
 
 // ✅ Eliminar item por ID de detalle
 router.delete("/:id", authenticate, deleteItem);

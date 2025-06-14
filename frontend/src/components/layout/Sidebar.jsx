@@ -1,11 +1,12 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { FiTrash2 } from 'react-icons/fi';
 
 const Sidebar = ({ isOpen, onHistorialActualizado }) => {
   const [productos, setProductos] = useState([]);
   const token = localStorage.getItem('token');
+  const location = useLocation();
 
   const cargarHistorial = async () => {
     if (!token) return;
@@ -20,7 +21,7 @@ const Sidebar = ({ isOpen, onHistorialActualizado }) => {
         setProductos([]);
         return;
       }
- 
+
       const data = await res.json();
       setProductos(Array.isArray(data) ? data : []);
     } catch (err) {
@@ -30,33 +31,31 @@ const Sidebar = ({ isOpen, onHistorialActualizado }) => {
   };
 
   const eliminarProducto = async (nombreProducto) => {
-  if (!token) {
-    alert("Debes iniciar sesión para borrar productos.");
-    return;
-  }
-
-  try {
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/historial/remove`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ nombreProducto }),
-    });
-
-    if (!res.ok) {
-      console.error("Error al borrar producto:", await res.text());
+    if (!token) {
+      alert("Debes iniciar sesión para borrar productos.");
       return;
     }
 
-    // Elimina localmente tras éxito
-    setProductos((prev) => prev.filter((p) => p.nombre !== nombreProducto));
-  } catch (err) {
-    console.error("Error al borrar producto:", err);
-  }
-};
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/historial/remove`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ nombreProducto }),
+      });
 
+      if (!res.ok) {
+        console.error("Error al borrar producto:", await res.text());
+        return;
+      }
+
+      setProductos((prev) => prev.filter((p) => p.nombre !== nombreProducto));
+    } catch (err) {
+      console.error("Error al borrar producto:", err);
+    }
+  };
 
   useEffect(() => {
     cargarHistorial();
@@ -78,9 +77,25 @@ const Sidebar = ({ isOpen, onHistorialActualizado }) => {
           transition={{ duration: 0.3, ease: 'easeInOut' }}
           className="w-full md:w-64 bg-primaryStrong p-4 flex flex-col z-20 relative md:static md:top-0"
         >
+          {location.pathname !== '/lista' && (
+            <Link
+              to="/lista"
+              className="mb-2 px-4 py-2 bg-sky-600 text-white rounded-lg hover:bg-opacity-80 transition-colors text-center md:text-left"
+            >
+              Ir a lista de la compra
+            </Link>
+          )}
+
+          <Link
+            to="/recomendaciones"
+            className="mb-2 px-4 py-2 bg-sweetPink text-background rounded-lg hover:bg-opacity-70 transition-colors text-center md:text-left"
+          >
+            Recomendaciones de productos
+          </Link>
+
           <Link
             to="/recetas"
-            className="mt-2 px-4 py-2 bg-sweetPink text-background rounded-lg hover:bg-opacity-70 transition-colors text-center md:text-left"
+            className="px-4 py-2 bg-sweetPink text-background rounded-lg hover:bg-opacity-70 transition-colors text-center md:text-left"
           >
             Ver recetas
           </Link>

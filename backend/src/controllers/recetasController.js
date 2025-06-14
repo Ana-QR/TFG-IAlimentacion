@@ -31,7 +31,6 @@ Devuélvelo en formato JSON puro (sin \`\`\`, sin encabezados ni explicaciones):
     try {
       return JSON.parse(text);
     } catch (err) {
-      // Busca primer array válido en el texto (por si IA añade basura antes/después)
       const match = text.match(/\[\s*{[\s\S]*}\s*\]/);
       if (match) {
         return JSON.parse(match[0]);
@@ -114,7 +113,10 @@ const generarRecetasDesdeHistorial = async (req, res) => {
     });
 
     if (!usuario || usuario.historial.length === 0) {
-      return res.status(400).json({ error: "Tu historial está vacío." });
+      return res.status(400).json({
+        error: "No hay productos en el historial.",
+        detalle: "Añade productos a tu lista y guárdalos para generar recetas.",
+      });
     }
 
     const nombresProductos = usuario.historial.map((p) => p.nombre);

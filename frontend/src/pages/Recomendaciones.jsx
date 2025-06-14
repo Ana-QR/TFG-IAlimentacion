@@ -185,34 +185,44 @@ const Recomendaciones = () => {
 
     {/* Popup */}
     {popup.visible && (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
-        <div className={`bg-white border rounded-2xl p-6 w-full max-w-sm mx-4 text-center animate-bounce-in
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm px-4">
+        <div className={`bg-white border rounded-2xl p-6 max-w-md w-full mx-auto text-center animate-bounce-in
           ${popup.type === 'success'
-            ? 'border-primary'
+            ? 'border-white'
             : popup.type === 'error'
               ? 'border-danger'
               : 'border-warning'
           }`}>
           <div className="flex flex-col items-center space-y-4">
             {popup.type === 'success' ? (
-              <FiCheckCircle size={48} className="text-primary animate-pop" />
+              <FiCheckCircle size={48} className="text-primaryStrong animate-pop" />
             ) : popup.type === 'error' ? (
               <FiXCircle size={48} className="text-danger animate-pop" />
             ) : (
               <FiAlertTriangle size={48} className="text-warning animate-pop" />
             )}
-            <h2 className="text-xl xl:text-2xl font-semibold">
+            <h2 className={`text-xl xl:text-2xl font-serif font-semibold ${
+              popup.type === 'success'
+                ? 'text-primary'
+                : popup.type === 'error'
+                  ? 'text-danger'
+                  : 'text-warning'
+            }`}>
               {popup.type === 'success'
                 ? '¡Éxito!'
                 : popup.type === 'error'
                   ? '¡Error!'
                   : '¡Atención!'}
             </h2>
-            <p className="text-sm xl:text-base text-gray-700">{popup.message}</p>
+            <p className="text-sm xl:text-base text-text">{popup.message}</p>
             {popup.secondary && (
               <p className="text-xs xl:text-sm text-tertiary">{popup.secondary}</p>
             )}
-            <p className="text-xs xl:text-sm text-gray-400">Este mensaje se cerrará automáticamente.</p>
+            <p className="text-xs xl:text-sm text-tertiary">
+              {popup.type === 'success'
+                ? 'Este mensaje se cerrará automáticamente.'
+                : ''}
+            </p>
           </div>
         </div>
       </div>

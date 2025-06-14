@@ -285,7 +285,9 @@ const Registro = () => {
                   : '¡Atención!'}
             </h2>
             <p className="text-sm xl:text-base text-text">{popup.message}</p>
-            {popup.secondary && <p className="text-sm text-tertiary">{popup.secondary}</p>}
+            {popup.secondary && 
+              <p className="text-sm text-tertiary">{popup.secondary}</p>
+            }
             <p className="text-xs xl:text-sm text-tertiary">
               {popup.type === 'success'
                 ? 'Serás redirigido en 3 segundos...'

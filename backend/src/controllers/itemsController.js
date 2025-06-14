@@ -67,6 +67,7 @@ const addItem = async (req, res) => {
           create: {
             id_producto: producto.id_producto,
             cantidad: cantidad || 1,
+            completed: false,
           },
         },
       },
@@ -108,6 +109,7 @@ const addItemToExistingList = async (req, res) => {
         id_lista: listaId,
         id_producto: producto.id_producto,
         cantidad: cantidad || 1,
+        completed: false,
       },
     });
 
@@ -177,6 +179,36 @@ const deleteProducto = async (req, res) => {
   }
 };
 
+// Cambiar estado completado
+const toggleCompleted = async (req, res) => {
+  const userId = req.user?.id_usuario;
+  const detalleId = parseInt(req.params.id);
+  const { completed } = req.body;
+
+  if (!userId) return res.status(401).json({ error: "No autorizado" });
+
+  try {
+    const detalle = await prisma.detalleListaCompra.findUnique({
+      where: { id_detalle: detalleId },
+      include: { lista: true },
+    });
+
+    if (!detalle || detalle.lista.id_usuario !== userId) {
+      return res.status(404).json({ error: "Item no encontrado o no autorizado." });
+    }
+
+    const actualizado = await prisma.detalleListaCompra.update({
+      where: { id_detalle: detalleId },
+      data: { completed },
+    });
+
+    res.json(actualizado);
+  } catch (error) {
+    console.error("Error al actualizar estado:", error);
+    res.status(500).json({ error: "Error al actualizar estado del item" });
+  }
+};
+
 module.exports = {
   getItems,
   getListaById,
@@ -185,4 +217,5 @@ module.exports = {
   updateListaNombre,
   deleteItem,
   deleteProducto,
+  toggleCompleted,
 };

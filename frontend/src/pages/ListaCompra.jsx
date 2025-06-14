@@ -73,7 +73,7 @@ const ListaCompra = () => {
         setListaId(data.id_lista);
         setItems(data.detalles);
       } else {
-        setItems(prev => [...prev, { ...data, producto: { nombre: newItem } }]);
+        setItems(prev => [...prev, { ...data, producto: { nombre: newItem }, completed: false }]);
       }
 
       setNewItem('');
@@ -110,10 +110,24 @@ const ListaCompra = () => {
     }
   };
 
-  const toggleItem = (id) => {
+  const toggleItem = async (id, currentState) => {
     setItems(items.map(item =>
       item.id_detalle === id ? { ...item, completed: !item.completed } : item
     ));
+
+    try {
+      await fetch(`${API_URL}/toggle/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ completed: !currentState }),
+        credentials: 'include',
+      });
+    } catch (err) {
+      console.error('Error al actualizar estado del producto:', err);
+    }
   };
 
   const deleteItem = async (id) => {
@@ -168,7 +182,9 @@ const ListaCompra = () => {
     <div className="bg-gradient-to-br from-gray-100 to-white shadow-lg rounded-3xl p-6 md:p-8 space-y-6 border border-gray-300 animate-fade-in">
       <div className="flex flex-col sm:flex-row sm:items-center gap-3">
         <img src="/logoIAlimentacion.png" alt="Icono Lista" className="w-8 h-8" />
-        <h1 className="text-xl sm:text-2xl 2xl:text-3xl font-serif font-semibold text-primary">Tu Lista de la Compra</h1>
+        <h1 className="text-xl sm:text-2xl 2xl:text-3xl font-serif font-semibold text-primary">
+          Tu Lista de la Compra
+        </h1>
       </div>
       <p className="text-gray-600 text-sm sm:text-base xl:text-lg">
         Añade productos y obtén recomendaciones personalizadas con inteligencia artificial.
@@ -217,7 +233,9 @@ const ListaCompra = () => {
             </div>
           ))
         ) : (
-          <p className="text-sm text-gray-400">No hay productos aún.</p>
+          <p className="text-sm text-gray-400">
+            Añade productos a tu lista y guárdalos para generar recetas.
+          </p>
         )}
       </div>
 
@@ -270,13 +288,32 @@ const ListaCompra = () => {
     </div>
 
     {popup.visible && (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
-        <div className="bg-white border border-danger rounded-2xl p-6 w-full max-w-sm mx-4 text-center animate-bounce-in">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm px-4">
+        <div className={`bg-white border rounded-2xl p-6 max-w-md w-full mx-auto text-center animate-bounce-in ${
+            popup.type === 'success'
+              ? 'border-white'
+              : popup.type === 'error'
+                ? 'border-danger'
+                : 'border-warning'
+          }`}>
           <div className="flex flex-col items-center space-y-4">
-            <FiXCircle size={48} className="text-danger animate-pop" />
-            <h2 className="text-xl font-semibold text-danger">¡Atención!</h2>
-            <p className="text-sm text-gray-700">{popup.message}</p>
-            <p className="text-xs text-tertiary">Este mensaje se cerrará automáticamente.</p>
+            {popup.type === 'success' ? (
+              <FiCheck size={48} className="text-primaryStrong animate-pop" />
+            ) : popup.type === 'error' ? (
+              <FiXCircle size={48} className="text-danger animate-pop" />
+            ) : (
+              <FiInfo size={48} className="text-warning animate-pop" />
+            )}
+            <h2 className={`text-xl font-semibold ${popup.type === 'success' ? 'text-primary' : popup.type === 'error' ? 'text-danger' : 'text-warning'}`}>
+              {popup.type === 'success' ? '¡Éxito!' : popup.type === 'error' ? '¡Error!' : '¡Atención!'}
+            </h2>
+            <p className="text-sm text-text">{popup.message}</p>
+            {popup.secondary && <p className="text-xs text-tertiary">{popup.secondary}</p>}
+            <p className="text-xs xl:text-sm text-tertiary">
+              {popup.type === 'success'
+                ? 'Este mensaje se cerrará automáticamente.'
+                : ''}
+            </p>
           </div>
         </div>
       </div>

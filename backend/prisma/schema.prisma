@@ -39,18 +39,18 @@ model ListaCompra {
 }
 
 model DetalleListaCompra {
-  id_detalle       Int              @id @default(autoincrement())
-  id_lista         Int
-  lista            ListaCompra      @relation(fields: [id_lista], references: [id_lista])
-  id_producto      Int
-  producto         Producto         @relation(fields: [id_producto], references: [id_producto])
-  cantidad         Int
+  id_detalle    Int          @id @default(autoincrement())
+  id_lista      Int
+  id_producto   Int
+  cantidad      Int          @default(1)
+  completed     Boolean      @default(false)
+  producto      Producto     @relation(fields: [id_producto], references: [id_producto])
+  lista         ListaCompra  @relation(fields: [id_lista], references: [id_lista])
 }
 
 model Producto {
   id_producto      Int              @id @default(autoincrement())
   nombre           String           @unique
-
   historialUsuarios Usuario[]       @relation("HistorialProductos")
   detalles         DetalleListaCompra[]
   ingredientes      IngredienteReceta[]

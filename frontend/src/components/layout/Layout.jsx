@@ -10,6 +10,7 @@ const Layout = ({ children }) => {
   const [isOpen, setIsOpen] = useState(true);
   const [cargarHistorial, setCargarHistorial] = useState(null);
 
+  // Ocultar sidebar solo en /registro
   const hideSidebar = location.pathname === '/registro';
 
   const handleToggleSidebar = () => {
@@ -22,14 +23,15 @@ const Layout = ({ children }) => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Si quieres el navbar fijo, activa estas dos líneas: */}
-      {/* <div className="fixed top-0 left-0 w-full z-50 bg-white shadow-md"> */}
       <Navbar onToggleSidebar={handleToggleSidebar} isOpen={isOpen} />
-      {/* </div> */}
 
       <div className="flex flex-col md:flex-row flex-1">
         {!hideSidebar && (
-          <Sidebar isOpen={isOpen} onHistorialActualizado={actualizarHistorial} />
+          <Sidebar
+            isOpen={isOpen}
+            onHistorialActualizado={actualizarHistorial}
+            currentPath={location.pathname} // 👈 para saber si estás en /lista
+          />
         )}
 
         <HistorialContext.Provider value={cargarHistorial}>
