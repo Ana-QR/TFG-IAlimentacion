@@ -1,7 +1,8 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { FiTrash2, FiShoppingCart, FiBookOpen, LuLeaf } from 'react-icons/fi';
+import { FiTrash2, FiShoppingCart, FiBookOpen} from 'react-icons/fi';
+import { LuLeaf } from 'react-icons/lu';
 
 
 const Sidebar = ({ isOpen, onHistorialActualizado }) => {
