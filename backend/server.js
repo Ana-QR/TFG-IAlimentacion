@@ -8,27 +8,30 @@ const fs = require("fs");
 
 const app = express();
 
-// ✅ CORS: permite solicitudes desde frontend (Vercel y local)
+// ✅ Lista de orígenes permitidos
 const allowedOrigins = [
-  'http://localhost:5173',
-  'https://ialimentacion.vercel.app'
+  "http://localhost:5173",
+  "https://ialimentacion.vercel.app"
 ];
 
-app.use((req, res, next) => {
-  const origin = req.headers.origin;
-  if (allowedOrigins.includes(origin)) {
-    res.setHeader("Access-Control-Allow-Origin", origin);
-  }
-  res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-  res.setHeader("Access-Control-Allow-Credentials", "true");
-  if (req.method === 'OPTIONS') {
-    return res.sendStatus(204); // importante: 204 evita errores de CORS preflight
-  }
-  next();
-});
+// ✅ Middleware CORS correcto
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Origen no permitido por CORS"));
+    }
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+}));
 
-// ✅ Middleware para JSON
+// ✅ Habilita preflight para todas las rutas
+app.options("*", cors());
+
+// ✅ Middleware para parsear JSON
 app.use(express.json());
 
 // 🌿 Health check
@@ -36,7 +39,7 @@ app.get("/", (req, res) => {
   res.send("🌿 API de IAlimentación activa. Puedes usar los endpoints bajo /api/");
 });
 
-// 📦 Importar rutas
+// 📦 Rutas
 const authRoutes = require("./src/routes/authRoutes");
 const itemsRoutes = require("./src/routes/itemsRoutes");
 const historialRoutes = require("./src/routes/historialRoutes");
@@ -45,7 +48,6 @@ const recetasRoutes = require("./src/routes/recetasRoutes");
 const usuarioRoutes = require("./src/routes/usuarioRoutes");
 const iaRoutes = require("./src/routes/iaRoutes");
 
-// 📌 Usar rutas
 app.use("/api/auth", authRoutes);
 app.use("/api/items", itemsRoutes);
 app.use("/api/historial", historialRoutes);
@@ -59,7 +61,6 @@ if (process.env.NODE_ENV === "production") {
   const frontendPath = path.join(__dirname, "../frontend/dist");
   app.use(express.static(frontendPath));
 
-  // Redirige todo excepto /api a index.html
   app.get(/^\/(?!api).*/, (req, res) => {
     const indexPath = path.join(frontendPath, "index.html");
     if (fs.existsSync(indexPath)) {
