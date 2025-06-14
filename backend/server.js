@@ -3,15 +3,23 @@ require("dotenv").config();
 
 const express = require("express");
 const cors = require("cors");
+const path = require("path");
+const fs = require("fs");
+
 const app = express();
 
-// ✅ CORS correcto para frontend en Vercel (y local opcional)
+// ✅ CORS: permite solicitudes desde el frontend en Vercel y local
 app.use(cors({
   origin: ['http://localhost:5173', 'https://ialimentacion.vercel.app'],
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true, // 🔑 Importante si usas tokens o cookies
 }));
 
+// ✅ Permite respuestas a preflight OPTIONS (CORS preflight)
+app.options('*', cors());
+
+// ✅ Middleware para JSON
 app.use(express.json());
 
 // 🌿 Health check
@@ -37,16 +45,7 @@ app.use("/api/recetas", recetasRoutes);
 app.use("/api/usuario", usuarioRoutes);
 app.use("/api/ia", iaRoutes);
 
-// 🚀 Iniciar servidor
-const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
-  console.log(`✅ Servidor activo en http://localhost:${PORT}`);
-});
-
-const path = require("path");
-const fs = require("fs");
-
-// 🔁 Sirve el frontend en producción
+// 🔁 Servir frontend en producción
 if (process.env.NODE_ENV === "production") {
   const frontendPath = path.join(__dirname, "../frontend/dist");
 
@@ -61,3 +60,9 @@ if (process.env.NODE_ENV === "production") {
     }
   });
 }
+
+// 🚀 Iniciar servidor
+const PORT = process.env.PORT || 3001;
+app.listen(PORT, () => {
+  console.log(`✅ Servidor activo en http://localhost:${PORT}`);
+});

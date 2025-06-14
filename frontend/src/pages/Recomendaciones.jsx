@@ -26,6 +26,7 @@ const Recomendaciones = () => {
 
     fetch(`${import.meta.env.VITE_API_URL}/api/items/lista/${idLista}`, {
       headers: { Authorization: `Bearer ${token}` },
+      credentials: 'include'
     })
       .then((res) => res.json())
       .then((lista) => {
@@ -47,6 +48,7 @@ const Recomendaciones = () => {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
       },
+      credentials: 'include',
       body: JSON.stringify({ id_lista: parseInt(idLista) }),
     })
       .then((res) => res.json())
@@ -70,6 +72,7 @@ const Recomendaciones = () => {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
+        credentials: 'include',
         body: JSON.stringify({ productos, preferencias, modo: modoIA }),
       });
 

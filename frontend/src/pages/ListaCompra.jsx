@@ -21,6 +21,7 @@ const ListaCompra = () => {
     if (!token) return;
     fetch(API_URL, {
       headers: { Authorization: `Bearer ${token}` },
+      credentials: 'include'
     })
       .then(res => res.json())
       .then(data => {
@@ -58,6 +59,7 @@ const ListaCompra = () => {
             nombreProducto: newItem,
             cantidad: 1,
           }),
+          credentials: 'include'
         }
       );
 
@@ -94,6 +96,7 @@ const ListaCompra = () => {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ nombreProducto }),
+        credentials: 'include'
       });
 
       if (!res.ok) {
@@ -119,6 +122,7 @@ const ListaCompra = () => {
       await fetch(`${API_URL}/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
+        credentials: 'include'
       });
       setItems(items.filter(item => item.id_detalle !== id));
     } catch (err) {
@@ -138,6 +142,7 @@ const ListaCompra = () => {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ id_lista: listaId }),
+        credentials: 'include'
       });
 
       const data = await res.json();

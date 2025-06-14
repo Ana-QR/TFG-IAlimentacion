@@ -1,136 +1,117 @@
-import React, { useState } from 'react'
-import axios from 'axios'
-import { useNavigate } from 'react-router-dom'
-import { FiCheckCircle, FiXCircle, FiAlertTriangle } from 'react-icons/fi'
+// src/pages/Registro.jsx
+import React, { useState } from 'react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import { FiCheckCircle, FiXCircle, FiAlertTriangle } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 
-
 const Registro = () => {
-  const [modo, setModo] = useState('inicio')
+  const [modo, setModo] = useState('inicio');
   const [formulario, setFormulario] = useState({
     nombre: '',
     email: '',
     contraseña: '',
     confirmar: '',
     mantenerSesion: false,
-  })
-  const [errores, setErrores] = useState({})
-  const [popup, setPopup] = useState({
-    visible: false,
-    message: '',
-    type: 'success',
-    secondary: ''
-  })
-  const navigate = useNavigate()
+  });
+  const [errores, setErrores] = useState({});
+  const [popup, setPopup] = useState({ visible: false, message: '', type: 'success', secondary: '' });
+  const navigate = useNavigate();
 
   const manejarCambio = (e) => {
-    const { name, value, type, checked } = e.target
-    setFormulario(f => ({
-      ...f,
-      [name]: type === 'checkbox' ? checked : value
-    }))
-    setErrores(errors => ({ ...errors, [name]: '' }))
-  }
+    const { name, value, type, checked } = e.target;
+    setFormulario(f => ({ ...f, [name]: type === 'checkbox' ? checked : value }));
+    setErrores(errors => ({ ...errors, [name]: '' }));
+  };
 
   const validar = () => {
-    const err = {}
-    if (!/\S+@\S+\.\S+/.test(formulario.email)) err.email = 'Email inválido'
-    if (formulario.contraseña.length < 6) err.contraseña = 'La contraseña debe tener al menos 6 caracteres'
-    if (modo === 'registro' && formulario.contraseña !== formulario.confirmar) err.confirmar = 'Las contraseñas no coinciden'
-    if (modo === 'registro' && formulario.nombre.trim() === '') err.nombre = 'El nombre es obligatorio'
-    return err
-  }
+    const err = {};
+    if (!/\S+@\S+\.\S+/.test(formulario.email)) err.email = 'Email inválido';
+    if (formulario.contraseña.length < 6) err.contraseña = 'La contraseña debe tener al menos 6 caracteres';
+    if (modo === 'registro' && formulario.contraseña !== formulario.confirmar) err.confirmar = 'Las contraseñas no coinciden';
+    if (modo === 'registro' && formulario.nombre.trim() === '') err.nombre = 'El nombre es obligatorio';
+    return err;
+  };
 
   const mostrarPopup = ({ message, type, secondary = '' }) => {
-    setPopup({ visible: true, message, type, secondary })
-    setTimeout(() => setPopup(p => ({ ...p, visible: false })), 3000)
-  }
+    setPopup({ visible: true, message, type, secondary });
+    setTimeout(() => setPopup(p => ({ ...p, visible: false })), 3000);
+  };
 
   const manejarEnvio = async (e) => {
-    e.preventDefault()
-    setPopup({ visible: false, message: '', type: 'success', secondary: '' })
-    const erroresValid = validar()
+    e.preventDefault();
+    setPopup({ visible: false, message: '', type: 'success', secondary: '' });
+    const erroresValid = validar();
     if (Object.keys(erroresValid).length) {
-      setErrores(erroresValid)
-      return
+      setErrores(erroresValid);
+      return;
     }
 
     try {
-      let res, successMessage
+      let res, successMessage;
       if (modo === 'inicio') {
         res = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/login`, {
           email: formulario.email,
-          password: formulario.contraseña
-        })
-        successMessage = `Bienvenid@, ${res.data.user.nombre}`
+          password: formulario.contraseña,
+        }, {
+          withCredentials: true
+        });
+        successMessage = `Bienvenid@, ${res.data.user.nombre}`;
       } else {
         res = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/registro`, {
           nombre: formulario.nombre,
           email: formulario.email,
-          password: formulario.contraseña
-        })
-        successMessage = 'Registro exitoso. Ya puedes iniciar sesión.'
-        setModo('inicio')
+          password: formulario.contraseña,
+        }, {
+          withCredentials: true
+        });
+        successMessage = 'Registro exitoso. Ya puedes iniciar sesión.';
+        setModo('inicio');
       }
 
-      // Guarda el token
       localStorage.setItem('token', res.data.token);
 
-      // Llama a /me para obtener el usuario real autenticado
       try {
         const userResponse = await axios.get(`${import.meta.env.VITE_API_URL}/api/auth/me`, {
-          headers: { Authorization: `Bearer ${res.data.token}` }
+          headers: { Authorization: `Bearer ${res.data.token}` },
+          withCredentials: true,
         });
-
         const user = userResponse.data;
         localStorage.setItem('username', user.nombre);
       } catch (err) {
         console.error('Error al cargar los datos del usuario:', err);
       }
 
+      const avisoSec = formulario.mantenerSesion ? '' : 'Aviso: Tu sesión no se mantendrá iniciada después de cerrar el navegador.';
 
-      const avisoSec = formulario.mantenerSesion
-        ? ''
-        : 'Aviso: Tu sesión no se mantendrá iniciada después de cerrar el navegador.'
-
-      mostrarPopup({ message: successMessage, type: 'success', secondary: avisoSec })
-      setTimeout(() => navigate('/'), 3000)
-
-      setFormulario({ nombre: '', email: '', contraseña: '', confirmar: '', mantenerSesion: false })
-      setErrores({})
+      mostrarPopup({ message: successMessage, type: 'success', secondary: avisoSec });
+      setTimeout(() => navigate('/'), 3000);
+      setFormulario({ nombre: '', email: '', contraseña: '', confirmar: '', mantenerSesion: false });
+      setErrores({});
     } catch (error) {
-      console.error('Error en autenticación:', error)
-      const serverMsg = error.response?.data?.error || 'Ocurrió un error. Inténtalo de nuevo.'
-      mostrarPopup({ message: serverMsg, type: 'error' })
+      console.error('Error en autenticación:', error);
+      const serverMsg = error.response?.data?.error || 'Ocurrió un error. Inténtalo de nuevo.';
+      mostrarPopup({ message: serverMsg, type: 'error' });
     }
-  }
+  };
 
-  // Nueva función para recuperar contraseña
   const recuperarContraseña = async () => {
     if (!formulario.email || !/\S+@\S+\.\S+/.test(formulario.email)) {
-      mostrarPopup({
-        message: 'Por favor, introduce un correo electrónico válido.',
-        type: 'warning'
-      });
+      mostrarPopup({ message: 'Por favor, introduce un correo electrónico válido.', type: 'warning' });
       return;
     }
 
     try {
-      await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/usuario/recuperar-password`,
-        { email: formulario.email }
-      );
-
-      mostrarPopup({
-        message: 'Se ha enviado una nueva contraseña a tu correo.',
-        type: 'success'
+      await axios.post(`${import.meta.env.VITE_API_URL}/api/usuario/recuperar-password`, {
+        email: formulario.email,
+      }, {
+        withCredentials: true
       });
+
+      mostrarPopup({ message: 'Se ha enviado una nueva contraseña a tu correo.', type: 'success' });
     } catch (err) {
       const msg = err.response?.data?.error || 'No se pudo enviar la nueva contraseña.';
-      mostrarPopup({
-        message: msg,
-        type: 'error'
-      });
+      mostrarPopup({ message: msg, type: 'error' });
     }
   };
 

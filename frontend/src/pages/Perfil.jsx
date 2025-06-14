@@ -21,6 +21,7 @@ const Perfil = () => {
       try {
         const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/me`, {
           headers: { Authorization: `Bearer ${token}` },
+          credentials: 'include',
         });
         const data = await res.json();
         if (res.ok) {
@@ -51,6 +52,7 @@ const Perfil = () => {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ nombre }),
+        credentials: 'include',
       });
 
       const data = await res.json();
@@ -84,6 +86,7 @@ const Perfil = () => {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ contraseñaActual: oldPass, nuevaContraseña: newPass }),
+        credentials: 'include',
       });
 
       const data = await res.json();
@@ -107,6 +110,7 @@ const Perfil = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
+        credentials: 'include',
       });
 
       const data = await res.json();
