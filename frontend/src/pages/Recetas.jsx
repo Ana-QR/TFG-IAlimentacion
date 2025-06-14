@@ -12,11 +12,23 @@ import { useLocation } from 'react-router-dom';
 const Recetas = () => {
   const [recetas, setRecetas] = useState([]);
   const [modoIA, setModoIA] = useState('hibrido');
+  const [isLoading, setIsLoading] = useState(false);
   const [popup, setPopup] = useState({ visible: false, type: '', message: '', secondary: '' });
   const location = useLocation();
   const token = localStorage.getItem('token');
 
   const cargarRecetas = () => {
+    if (!token) {
+      setPopup({
+        visible: true,
+        type: 'error',
+        message: 'No has iniciado sesión.',
+        secondary: 'Inicia sesión para generar recetas.',
+      });
+      return;
+    }
+
+    setIsLoading(true);
     fetch(`${import.meta.env.VITE_API_URL}/api/recetas/desde-historial`, {
       method: 'POST',
       headers: {
@@ -33,7 +45,6 @@ const Recetas = () => {
       .then(data => {
         if (Array.isArray(data.recetas)) {
           setRecetas(data.recetas);
-
           if (data.modelo === 'openai') {
             setPopup({
               visible: true,
@@ -41,7 +52,6 @@ const Recetas = () => {
               message: 'Gemini no estaba disponible.',
               secondary: 'Se ha usado OpenAI (GPT-3.5-turbo), que puede implicar costes.',
             });
-            setTimeout(() => setPopup({ visible: false }), 3000);
           }
         } else {
           setRecetas([]);
@@ -55,7 +65,9 @@ const Recetas = () => {
           message: 'No se pudieron generar recetas.',
           secondary: 'Verifica tu conexión o intenta más tarde.',
         });
-        setTimeout(() => setPopup({ visible: false }), 3000);
+      })
+      .finally(() => {
+        setIsLoading(false);
       });
   };
 
@@ -66,6 +78,14 @@ const Recetas = () => {
     }
     cargarRecetas();
   }, [location.pathname]);
+
+  useEffect(() => {
+    let timeout;
+    if (popup.visible) {
+      timeout = setTimeout(() => setPopup({ visible: false }), 3000);
+    }
+    return () => clearTimeout(timeout);
+  }, [popup.visible]);
 
   return (
     <section className="max-w-5xl mx-auto pt-4 pb-8 px-4 space-y-8">
@@ -94,7 +114,13 @@ const Recetas = () => {
         </div>
       </div>
 
-      {recetas.length > 0 ? (
+      {isLoading && (
+        <div className="text-center text-sm text-gray-500 animate-pulse">
+          Generando recetas con IA...
+        </div>
+      )}
+
+      {recetas.length > 0 && !isLoading ? (
         <div className="space-y-6">
           {recetas.map((receta, index) => (
             <motion.div
@@ -107,7 +133,7 @@ const Recetas = () => {
               <div className="w-full md:w-40 h-40 bg-gray-300 rounded-lg flex items-center justify-center text-sm text-gray-500 overflow-hidden">
                 <img
                   src="/recetasDeCocina.png"
-                  alt="Receta"
+                  alt={`Imagen de receta ${receta.title}`}
                   className="object-cover w-full h-full"
                 />
               </div>
@@ -115,48 +141,50 @@ const Recetas = () => {
                 <h2 className="text-xl font-semibold text-primary font-serif">{receta.title}</h2>
                 <p className="text-text text-sm">{receta.description}</p>
                 <ul className="list-disc list-inside text-sm text-gray-700">
-                  {receta.ingredients?.map((ing, idx) => (
-                    <li key={`ing-${idx}`}>{ing}</li>
+                  {receta.ingredients?.map((ing) => (
+                    <li key={ing}>{ing}</li>
                   ))}
                 </ul>
                 <ol className="list-decimal list-inside text-sm text-gray-700">
-                  {receta.steps?.map((step, idx) => (
-                    <li key={`step-${idx}`}>{step}</li>
+                  {receta.steps?.map((step) => (
+                    <li key={step}>{step}</li>
                   ))}
                 </ol>
               </div>
             </motion.div>
           ))}
         </div>
-      ) : (
+      ) : !isLoading ? (
         <p className="text-gray-500 text-sm">No hay recetas generadas aún.</p>
-      )}
+      ) : null}
 
       {popup.visible && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
           <div
-            className={`bg-white border rounded-2xl p-8 w-full max-w-md mx-auto text-center animate-bounce-in ${popup.type === 'success'
-              ? 'border-white'
-              : popup.type === 'error'
-                ? 'border-danger'
-                : 'border-warning'
-              }`}
+            className={`bg-white border rounded-2xl p-8 w-full max-w-md mx-auto text-center ${
+              popup.type === 'success'
+                ? 'border-white'
+                : popup.type === 'error'
+                  ? 'border-danger'
+                  : 'border-warning'
+            }`}
           >
             <div className="flex flex-col items-center space-y-4">
               {popup.type === 'success' ? (
-                <FiCheckCircle size={48} className="text-primaryStrong animate-pop" />
+                <FiCheckCircle size={48} className="text-primaryStrong" />
               ) : popup.type === 'error' ? (
-                <FiXCircle size={48} className="text-danger animate-pop" />
+                <FiXCircle size={48} className="text-danger" />
               ) : (
-                <FiAlertTriangle size={48} className="text-warning animate-pop" />
+                <FiAlertTriangle size={48} className="text-warning" />
               )}
               <h2
-                className={`text-2xl font-serif font-semibold ${popup.type === 'success'
-                  ? 'text-primary'
-                  : popup.type === 'error'
-                    ? 'text-danger'
-                    : 'text-warning'
-                  }`}
+                className={`text-2xl font-serif font-semibold ${
+                  popup.type === 'success'
+                    ? 'text-primary'
+                    : popup.type === 'error'
+                      ? 'text-danger'
+                      : 'text-warning'
+                }`}
               >
                 {popup.type === 'success'
                   ? '¡Éxito!'

@@ -16,7 +16,7 @@ const generarRecetas = async (req, res) => {
   const prompt = `
 Tengo los siguientes productos: ${productos.join(", ")}.
 Por favor, genera exactamente 3 recetas fáciles y saludables que los usen.
-Devuélvelo en formato JSON puro (sin \`\`\`json ni \`\`\`, ni ningún texto antes o después):
+Devuélvelo en formato JSON puro (sin \`\`\`, sin encabezados ni explicaciones):
 [
   {
     "title": "Nombre de la receta",
@@ -24,7 +24,21 @@ Devuélvelo en formato JSON puro (sin \`\`\`json ni \`\`\`, ni ningún texto ant
     "ingredients": ["ingrediente1", "ingrediente2", ...],
     "steps": ["Paso 1", "Paso 2", ...]
   }
-]`.trim();
+]
+`.trim();
+
+  const parseJSON = (text) => {
+    try {
+      return JSON.parse(text);
+    } catch (err) {
+      // Busca primer array válido en el texto (por si IA añade basura antes/después)
+      const match = text.match(/\[\s*{[\s\S]*}\s*\]/);
+      if (match) {
+        return JSON.parse(match[0]);
+      }
+      throw new Error("Respuesta de IA no es un JSON válido.");
+    }
+  };
 
   const usarGemini = async () => {
     try {
@@ -32,7 +46,7 @@ Devuélvelo en formato JSON puro (sin \`\`\`json ni \`\`\`, ni ningún texto ant
       const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
       const result = await model.generateContent(prompt);
       const texto = result.response.text().trim();
-      return JSON.parse(texto);
+      return parseJSON(texto);
     } catch (err) {
       throw new Error("Error usando Gemini: " + err.message);
     }
@@ -46,7 +60,7 @@ Devuélvelo en formato JSON puro (sin \`\`\`json ni \`\`\`, ni ningún texto ant
         temperature: 0.7,
       });
       const texto = completion.choices[0].message.content.trim();
-      return JSON.parse(texto);
+      return parseJSON(texto);
     } catch (err) {
       throw new Error("Error usando OpenAI: " + err.message);
     }
@@ -79,10 +93,10 @@ Devuélvelo en formato JSON puro (sin \`\`\`json ni \`\`\`, ni ningún texto ant
       return res.status(500).json({ error: "La IA no devolvió un array válido." });
     }
 
-    res.status(200).json({ recetas, modelo, aviso });
+    return res.status(200).json({ recetas, modelo, aviso });
   } catch (error) {
-    console.error("Error generando recetas:", error.message);
-    res.status(500).json({ error: "Error al generar las recetas con IA.", detalle: error.message });
+    console.error("Error generando recetas:", error);
+    return res.status(500).json({ error: "Error generando recetas.", detalle: error.message });
   }
 };
 
@@ -108,7 +122,7 @@ const generarRecetasDesdeHistorial = async (req, res) => {
 
     await generarRecetas(req, res);
   } catch (error) {
-    console.error("Error generando recetas desde historial:", error.message);
+    console.error("Error generando recetas desde historial:", error);
     res.status(500).json({ error: "Error generando recetas desde historial." });
   }
 };
