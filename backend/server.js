@@ -12,15 +12,18 @@ const app = express();
 const allowedOrigins = [
   "http://localhost:5173",
   "https://ialimentacion.vercel.app",
-  "https://ialimentacion-qkgup5jop-ana-qrs-projects.vercel.app"
+  "https://ialimentacion-qkgup5jop-ana-qrs-projects.vercel.app",
+  "https://ialimentacion-3l5omzsbr-ana-qrs-projects.vercel.app",
+  "https://ialimentacion-pt90mldnb-ana-qrs-projects.vercel.app"
 ];
 
 app.use(cors({
-  origin: (origin, callback) => {
+  origin: function (origin, callback) {
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error("Origen no permitido por CORS"));
+      console.error('Origen bloqueado por CORS:', origin);
+      callback(new Error('Origen no permitido por CORS'));
     }
   },
   credentials: true,
