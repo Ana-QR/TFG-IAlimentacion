@@ -12,7 +12,7 @@ const app = express();
 const allowedOrigins = [
   "http://localhost:5173",
   "https://ialimentacion.vercel.app",
-  "https://ialimentacion-pt90mldnb-ana-qrs-projects.vercel.app"
+  "https://ialimentacion-qkgup5jop-ana-qrs-projects.vercel.app"
 ];
 
 // ✅ Middleware CORS
