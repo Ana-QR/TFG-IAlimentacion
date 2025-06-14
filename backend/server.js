@@ -57,17 +57,21 @@ app.use("/api/ia", iaRoutes);
 // 🔁 Servir frontend en producción
 if (process.env.NODE_ENV === "production") {
   const frontendPath = path.join(__dirname, "../frontend/dist");
-  
+
   if (fs.existsSync(frontendPath)) {
     app.use(express.static(frontendPath));
 
     // Redirige cualquier ruta que no empiece por /api al index.html
-    app.get(/^\/(?!api).*/, (req, res) => {
-      const indexPath = path.join(frontendPath, "index.html");
-      if (fs.existsSync(indexPath)) {
-        res.sendFile(indexPath);
+    app.get("*", (req, res) => {
+      if (!req.path.startsWith("/api")) {
+        const indexPath = path.join(frontendPath, "index.html");
+        if (fs.existsSync(indexPath)) {
+          return res.sendFile(indexPath);
+        } else {
+          return res.status(404).send("No se encontró index.html");
+        }
       } else {
-        res.status(404).send("No se encontró index.html");
+        res.status(404).send("Ruta de API no encontrada");
       }
     });
   } else {
