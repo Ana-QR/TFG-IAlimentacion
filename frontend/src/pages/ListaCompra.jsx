@@ -164,122 +164,125 @@ const ListaCompra = () => {
   };
 
   return (
-    <div className="flex-1 max-w-5xl mx-auto py-8 px-4 space-y-8">
-      <div className="bg-gradient-to-br from-gray-100 to-white shadow-lg rounded-3xl p-6 md:p-8 space-y-6 border border-gray-300 animate-fade-in">
-        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-          <img src="/logoIAlimentacion.png" alt="Icono Lista" className="w-8 h-8" />
-          <h1 className="text-xl sm:text-2xl font-serif font-semibold text-primary">Tu Lista de la Compra</h1>
-        </div>
-        <p className="text-gray-600 text-sm sm:text-base">
-          Añade productos y obtén recomendaciones personalizadas con inteligencia artificial.
-        </p>
+  <div className="flex-1 max-w-7xl 2xl:max-w-screen-xl mx-auto py-8 px-4 xl:px-8 space-y-8">
+    <div className="bg-gradient-to-br from-gray-100 to-white shadow-lg rounded-3xl p-6 md:p-8 space-y-6 border border-gray-300 animate-fade-in">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+        <img src="/logoIAlimentacion.png" alt="Icono Lista" className="w-8 h-8" />
+        <h1 className="text-xl sm:text-2xl 2xl:text-3xl font-serif font-semibold text-primary">Tu Lista de la Compra</h1>
+      </div>
+      <p className="text-gray-600 text-sm sm:text-base xl:text-lg">
+        Añade productos y obtén recomendaciones personalizadas con inteligencia artificial.
+      </p>
 
-        <div className="space-y-4">
-          {items.length > 0 ? (
-            items.map((item, index) => (
-              <div
-                key={item.id_detalle ?? `temp-${index}`}
-                className={`flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-4 rounded-lg transition-shadow ${item.completed ? 'bg-white/50' : 'bg-white'
-                  } hover:shadow-md`}
-              >
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={() => toggleItem(item.id_detalle)}
-                    className={`w-6 h-6 flex items-center justify-center rounded ${item.completed ? 'bg-primary text-white' : 'border border-support bg-white'
-                      }`}
-                  >
-                    {item.completed && <FiCheck size={16} />}
-                  </button>
-                  <span
-                    className={`text-text break-all ${item.completed ? 'line-through text-support' : ''
-                      }`}
-                  >
-                    {item.producto.nombre}
-                  </span>
-                </div>
-                <div className="flex gap-2 self-end sm:self-auto">
-                  <button
-                    onClick={() => añadirProductoAlHistorial(item.producto.nombre)}
-                    className="text-green-500 hover:text-green-700"
-                  >
-                    <FiPlus size={16} />
-                  </button>
-                  <button
-                    onClick={() => deleteItem(item.id_detalle)}
-                    className="p-2 hover:text-danger rounded-full transition"
-                  >
-                    <FiTrash2 size={18} />
-                  </button>
-                </div>
+      <div className="space-y-4">
+        {items.length > 0 ? (
+          items.map((item, index) => (
+            <div
+              key={item.id_detalle ?? `temp-${index}`}
+              className={`flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-4 rounded-lg transition-shadow ${
+                item.completed ? 'bg-white/50' : 'bg-white'
+              } hover:shadow-md`}
+            >
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => toggleItem(item.id_detalle)}
+                  className={`w-6 h-6 flex items-center justify-center rounded ${
+                    item.completed ? 'bg-primary text-white' : 'border border-support bg-white'
+                  }`}
+                >
+                  {item.completed && <FiCheck size={16} />}
+                </button>
+                <span
+                  className={`text-text break-all ${
+                    item.completed ? 'line-through text-support' : ''
+                  }`}
+                >
+                  {item.producto.nombre}
+                </span>
               </div>
-            ))
-          ) : (
-            <p className="text-sm text-gray-400">No hay productos aún.</p>
-          )}
-        </div>
-
-        <div className="flex flex-col sm:flex-row gap-3">
-          <input
-            type="text"
-            value={newItem}
-            onChange={(e) => setNewItem(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && addItem()}
-            placeholder="Ej: Arroz integral"
-            className="flex-1 input"
-          />
-          <button
-            onClick={addItem}
-            className="bg-sweetPink hover:bg-opacity-70 transition-colors text-white px-4 py-2 rounded-lg flex items-center gap-2 justify-center text-sm"
-          >
-            <FiPlus /> Añadir
-          </button>
-        </div>
-      </div>
-
-      <div className="bg-white border-l-4 border-tertiary p-5 rounded-xl shadow-sm space-y-4">
-        <h3 className="font-semibold text-tertiary flex items-center gap-2 text-base sm:text-lg">
-          <FiInfo size={20} /> Recomendación de IA
-        </h3>
-
-        {cargandoIA ? (
-          <p className="animate-pulse text-sm text-gray-500">Generando recomendación...</p>
-        ) : (
-          <p className="text-text text-sm whitespace-pre-line">
-            {mensajeIA || 'Pulsa el botón para generar una recomendación.'}
-          </p>
-        )}
-
-        <div className="flex flex-col sm:flex-row gap-3">
-          <button
-            onClick={generarMensajeIA}
-            className="btn btn-primary text-sm flex items-center gap-2 justify-center"
-          >
-            <FiRefreshCcw size={16} /> Generar Recomendación IA
-          </button>
-
-          <Link
-            to="/recomendaciones"
-            className="btn btn-secondary text-sm flex items-center gap-2 justify-center"
-          >
-            Ver detalles completos <FiArrowRight size={16} />
-          </Link>
-        </div>
-      </div>
-
-      {popup.visible && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
-          <div className="bg-white border border-danger rounded-2xl p-6 w-full max-w-sm mx-4 text-center animate-bounce-in">
-            <div className="flex flex-col items-center space-y-4">
-              <FiXCircle size={48} className="text-danger animate-pop" />
-              <h2 className="text-xl font-semibold text-danger">¡Atención!</h2>
-              <p className="text-sm text-gray-700">{popup.message}</p>
-              <p className="text-xs text-tertiary">Este mensaje se cerrará automáticamente.</p>
+              <div className="flex gap-2 self-end sm:self-auto">
+                <button
+                  onClick={() => añadirProductoAlHistorial(item.producto.nombre)}
+                  className="text-green-500 hover:text-green-700"
+                >
+                  <FiPlus size={16} />
+                </button>
+                <button
+                  onClick={() => deleteItem(item.id_detalle)}
+                  className="p-2 hover:text-danger rounded-full transition"
+                >
+                  <FiTrash2 size={18} />
+                </button>
+              </div>
             </div>
+          ))
+        ) : (
+          <p className="text-sm text-gray-400">No hay productos aún.</p>
+        )}
+      </div>
+
+      <div className="flex flex-col sm:flex-row gap-3">
+        <input
+          type="text"
+          value={newItem}
+          onChange={(e) => setNewItem(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && addItem()}
+          placeholder="Ej: Arroz integral"
+          className="flex-1 input"
+        />
+        <button
+          onClick={addItem}
+          className="bg-sweetPink hover:bg-opacity-70 transition-colors text-white px-4 py-2 rounded-lg flex items-center gap-2 justify-center text-sm"
+        >
+          <FiPlus /> Añadir
+        </button>
+      </div>
+    </div>
+
+    <div className="bg-white border-l-4 border-tertiary p-5 rounded-xl shadow-sm space-y-4">
+      <h3 className="font-semibold text-tertiary flex items-center gap-2 text-base sm:text-lg">
+        <FiInfo size={20} /> Recomendación de IA
+      </h3>
+
+      {cargandoIA ? (
+        <p className="animate-pulse text-sm text-gray-500">Generando recomendación...</p>
+      ) : (
+        <p className="text-text text-sm whitespace-pre-line">
+          {mensajeIA || 'Pulsa el botón para generar una recomendación.'}
+        </p>
+      )}
+
+      <div className="flex flex-col sm:flex-row gap-3">
+        <button
+          onClick={generarMensajeIA}
+          className="btn btn-primary text-sm flex items-center gap-2 justify-center"
+        >
+          <FiRefreshCcw size={16} /> Generar Recomendación IA
+        </button>
+
+        <Link
+          to="/recomendaciones"
+          className="btn btn-secondary text-sm flex items-center gap-2 justify-center"
+        >
+          Ver detalles completos <FiArrowRight size={16} />
+        </Link>
+      </div>
+    </div>
+
+    {popup.visible && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
+        <div className="bg-white border border-danger rounded-2xl p-6 w-full max-w-sm mx-4 text-center animate-bounce-in">
+          <div className="flex flex-col items-center space-y-4">
+            <FiXCircle size={48} className="text-danger animate-pop" />
+            <h2 className="text-xl font-semibold text-danger">¡Atención!</h2>
+            <p className="text-sm text-gray-700">{popup.message}</p>
+            <p className="text-xs text-tertiary">Este mensaje se cerrará automáticamente.</p>
           </div>
         </div>
-      )}
-    </div>
-  );
+      </div>
+    )}
+  </div>
+);
 };
 
 export default ListaCompra;

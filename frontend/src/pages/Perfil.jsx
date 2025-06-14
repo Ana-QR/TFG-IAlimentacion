@@ -127,108 +127,111 @@ const Perfil = () => {
 
 
   return (
-    <div className="max-w-xl mx-auto bg-white p-6 md:p-10 shadow-lg rounded-2xl space-y-6 mt-10 border border-gray-200">
-      <h2 className="text-2xl font-serif text-primary mb-4 flex items-center gap-2">
-        <FiKey /> Seguridad de la Cuenta
-      </h2>
+  <div className="max-w-2xl xl:max-w-3xl 2xl:max-w-screen-lg mx-auto bg-white p-6 md:p-10 xl:p-12 shadow-lg rounded-2xl space-y-6 mt-10 border border-gray-200">
+    <h2 className="text-2xl xl:text-3xl font-serif text-primary mb-4 flex items-center gap-2">
+      <FiKey /> Seguridad de la Cuenta
+    </h2>
 
-      <div className="space-y-4">
-        <div>
-          <label className="text-sm font-medium text-gray-600">Nombre</label>
-          <input
-            type="text"
-            value={nombre}
-            onChange={(e) => setNombre(e.target.value)}
-            className="w-full mt-1 px-4 py-2 border rounded-lg text-sm"
-          />
-          <button
-            onClick={actualizarNombre}
-            className="mt-2 btn btn-secondary w-full text-sm"
-          >
-            Guardar nuevo nombre
-          </button>
-        </div>
-
-        <div>
-          <label className="text-sm font-medium text-gray-600">Correo electrónico</label>
-          <input
-            type="email"
-            value={email}
-            disabled
-            className="w-full mt-1 px-4 py-2 border rounded-lg bg-gray-100 text-sm"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-gray-600">Contraseña actual</label>
-          <input
-            type="password"
-            value={oldPass}
-            onChange={(e) => setOldPass(e.target.value)}
-            className="w-full px-4 py-2 border rounded-lg text-sm"
-            placeholder="Introduce tu contraseña actual"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-gray-600">Nueva contraseña</label>
-          <input
-            type="password"
-            value={newPass}
-            onChange={(e) => setNewPass(e.target.value)}
-            className="w-full px-4 py-2 border rounded-lg text-sm"
-            placeholder="Nueva contraseña"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-gray-600">Confirmar nueva contraseña</label>
-          <input
-            type="password"
-            value={confirmPass}
-            onChange={(e) => setConfirmPass(e.target.value)}
-            className="w-full px-4 py-2 border rounded-lg text-sm"
-            placeholder="Repite la nueva contraseña"
-          />
-        </div>
-
+    <div className="space-y-5 xl:space-y-6">
+      <div>
+        <label className="text-sm font-medium text-gray-600">Nombre</label>
+        <input
+          type="text"
+          value={nombre}
+          onChange={(e) => setNombre(e.target.value)}
+          className="w-full mt-1 px-4 py-2 border rounded-lg text-sm xl:text-base"
+        />
         <button
-          onClick={cambiarContraseña}
-          className="btn btn-primary w-full flex items-center justify-center gap-2 text-sm"
+          onClick={actualizarNombre}
+          className="mt-2 btn btn-secondary w-full text-sm xl:text-base"
         >
-          <FiCheckCircle /> Cambiar contraseña
-        </button>
-
-        <div className="text-center text-sm text-gray-500 my-4">¿Has olvidado tu contraseña?</div>
-
-        <button
-          onClick={recuperarContraseña}
-          className="btn btn-secondary w-full flex items-center justify-center gap-2 text-sm"
-        >
-          <FiMail /> Enviar nueva contraseña al correo
+          Guardar nuevo nombre
         </button>
       </div>
 
-      {popup.visible && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
-          <div className="bg-white border border-gray-300 rounded-2xl p-6 w-full max-w-sm mx-4 text-center shadow-md">
-            <div className="flex flex-col items-center space-y-4">
-              {popup.type === 'success' ? (
-                <FiCheckCircle size={48} className="text-green-500 animate-pop" />
-              ) : (
-                <FiXCircle size={48} className="text-danger animate-pop" />
-              )}
-              <h2 className={`text-xl font-semibold ${popup.type === 'success' ? 'text-green-600' : 'text-danger'}`}>
-                {popup.type === 'success' ? 'Éxito' : 'Error'}
-              </h2>
-              <p className="text-sm text-gray-700">{popup.message}</p>
-              <p className="text-xs text-tertiary">Este mensaje se cerrará automáticamente.</p>
-            </div>
+      <div>
+        <label className="text-sm font-medium text-gray-600">Correo electrónico</label>
+        <input
+          type="email"
+          value={email}
+          disabled
+          className="w-full mt-1 px-4 py-2 border rounded-lg bg-gray-100 text-sm xl:text-base"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-gray-600">Contraseña actual</label>
+        <input
+          type="password"
+          value={oldPass}
+          onChange={(e) => setOldPass(e.target.value)}
+          className="w-full px-4 py-2 border rounded-lg text-sm xl:text-base"
+          placeholder="Introduce tu contraseña actual"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-gray-600">Nueva contraseña</label>
+        <input
+          type="password"
+          value={newPass}
+          onChange={(e) => setNewPass(e.target.value)}
+          className="w-full px-4 py-2 border rounded-lg text-sm xl:text-base"
+          placeholder="Nueva contraseña"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-gray-600">Confirmar nueva contraseña</label>
+        <input
+          type="password"
+          value={confirmPass}
+          onChange={(e) => setConfirmPass(e.target.value)}
+          className="w-full px-4 py-2 border rounded-lg text-sm xl:text-base"
+          placeholder="Repite la nueva contraseña"
+        />
+      </div>
+
+      <button
+        onClick={cambiarContraseña}
+        className="btn btn-primary w-full flex items-center justify-center gap-2 text-sm xl:text-base"
+      >
+        <FiCheckCircle /> Cambiar contraseña
+      </button>
+
+      <div className="text-center text-sm xl:text-base text-gray-500 my-4">
+        ¿Has olvidado tu contraseña?
+      </div>
+
+      <button
+        onClick={recuperarContraseña}
+        className="btn btn-secondary w-full flex items-center justify-center gap-2 text-sm xl:text-base"
+      >
+        <FiMail /> Enviar nueva contraseña al correo
+      </button>
+    </div>
+
+    {popup.visible && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
+        <div className="bg-white border border-gray-300 rounded-2xl p-6 w-full max-w-sm mx-4 text-center shadow-md">
+          <div className="flex flex-col items-center space-y-4">
+            {popup.type === 'success' ? (
+              <FiCheckCircle size={48} className="text-green-500 animate-pop" />
+            ) : (
+              <FiXCircle size={48} className="text-danger animate-pop" />
+            )}
+            <h2 className={`text-xl xl:text-2xl font-semibold ${popup.type === 'success' ? 'text-green-600' : 'text-danger'}`}>
+              {popup.type === 'success' ? 'Éxito' : 'Error'}
+            </h2>
+            <p className="text-sm xl:text-base text-gray-700">{popup.message}</p>
+            <p className="text-xs text-tertiary">Este mensaje se cerrará automáticamente.</p>
           </div>
         </div>
-      )}
-    </div>
-  );
+      </div>
+    )}
+  </div>
+);
+
 };
 
 export default Perfil;

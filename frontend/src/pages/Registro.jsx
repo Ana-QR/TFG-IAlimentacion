@@ -117,179 +117,187 @@ const Registro = () => {
 
 
   return (
-    <div className="w-full max-w-md mx-auto px-4 sm:px-6 py-12 space-y-6">
-      {/* Botones modo */}
-      <div className="flex justify-center gap-2">
-        <button
-          onClick={() => {
-            setModo('inicio');
-            setErrores({});
-            setPopup({ visible: false, message: '', type: 'success', secondary: '' });
-          }}
-          className={`flex-1 text-sm py-2 rounded-t-xl font-semibold transition ${modo === 'inicio' ? 'bg-sweetPink text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-            }`}
-        >
-          Iniciar sesión
-        </button>
-        <button
-          onClick={() => {
-            setModo('registro');
-            setErrores({});
-            setPopup({ visible: false, message: '', type: 'success', secondary: '' });
-          }}
-          className={`flex-1 text-sm py-2 rounded-t-xl font-semibold transition ${modo === 'registro' ? 'bg-sweetPink text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-            }`}
-        >
-          Registrarse
-        </button>
-      </div>
+  <div className="w-full max-w-lg xl:max-w-xl 2xl:max-w-2xl mx-auto px-4 sm:px-6 xl:px-8 py-12 space-y-6">
+    {/* Botones modo */}
+    <div className="flex justify-center gap-2">
+      <button
+        onClick={() => {
+          setModo('inicio');
+          setErrores({});
+          setPopup({ visible: false, message: '', type: 'success', secondary: '' });
+        }}
+        className={`flex-1 text-sm xl:text-base py-2 rounded-t-xl font-semibold transition ${
+          modo === 'inicio'
+            ? 'bg-sweetPink text-white'
+            : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+        }`}
+      >
+        Iniciar sesión
+      </button>
+      <button
+        onClick={() => {
+          setModo('registro');
+          setErrores({});
+          setPopup({ visible: false, message: '', type: 'success', secondary: '' });
+        }}
+        className={`flex-1 text-sm xl:text-base py-2 rounded-t-xl font-semibold transition ${
+          modo === 'registro'
+            ? 'bg-sweetPink text-white'
+            : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+        }`}
+      >
+        Registrarse
+      </button>
+    </div>
 
-      {/* Formulario */}
-      <AnimatePresence mode="wait">
-        <motion.form
-          key={modo}
-          onSubmit={manejarEnvio}
-          initial={{ opacity: 0, x: 40 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -40 }}
-          transition={{ duration: 0.3 }}
-          className="bg-white shadow-md rounded-b-2xl border border-gray-200 px-6 py-8 space-y-5"
-        >
-          {modo === 'registro' && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
-              <input
-                name="nombre"
-                value={formulario.nombre}
-                onChange={manejarCambio}
-                className="w-full input rounded-lg"
-                placeholder="Tu nombre"
-              />
-              {errores.nombre && <p className="text-red-600 text-sm">{errores.nombre}</p>}
-            </div>
-          )}
-
+    {/* Formulario */}
+    <AnimatePresence mode="wait">
+      <motion.form
+        key={modo}
+        onSubmit={manejarEnvio}
+        initial={{ opacity: 0, x: 40 }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: -40 }}
+        transition={{ duration: 0.3 }}
+        className="bg-white shadow-md rounded-b-2xl border border-gray-200 px-6 xl:px-10 py-8 space-y-5"
+      >
+        {modo === 'registro' && (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Correo electrónico</label>
+            <label className="block text-sm xl:text-base font-medium text-gray-700 mb-1">Nombre</label>
             <input
-              name="email"
-              type="email"
-              value={formulario.email}
+              name="nombre"
+              value={formulario.nombre}
               onChange={manejarCambio}
               className="w-full input rounded-lg"
-              placeholder="ejemplo@correo.com"
+              placeholder="Tu nombre"
             />
-            {errores.email && <p className="text-red-600 text-sm">{errores.email}</p>}
+            {errores.nombre && <p className="text-red-600 text-sm">{errores.nombre}</p>}
           </div>
+        )}
 
+        <div>
+          <label className="block text-sm xl:text-base font-medium text-gray-700 mb-1">Correo electrónico</label>
+          <input
+            name="email"
+            type="email"
+            value={formulario.email}
+            onChange={manejarCambio}
+            className="w-full input rounded-lg"
+            placeholder="ejemplo@correo.com"
+          />
+          {errores.email && <p className="text-red-600 text-sm">{errores.email}</p>}
+        </div>
+
+        <div>
+          <label className="block text-sm xl:text-base font-medium text-gray-700 mb-1">Contraseña</label>
+          <input
+            name="contraseña"
+            type="password"
+            value={formulario.contraseña}
+            onChange={manejarCambio}
+            className="w-full input rounded-lg"
+            placeholder="••••••••"
+          />
+          {errores.contraseña && <p className="text-red-600 text-sm">{errores.contraseña}</p>}
+          {modo === 'inicio' && (
+            <div className="mt-2 text-right">
+              <button
+                type="button"
+                className="text-xs xl:text-sm text-blue-600 hover:underline"
+                onClick={recuperarContraseña}
+                tabIndex={-1}
+              >
+                He olvidado mi contraseña
+              </button>
+            </div>
+          )}
+        </div>
+
+        {modo === 'registro' && (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Contraseña</label>
+            <label className="block text-sm xl:text-base font-medium text-gray-700 mb-1">Confirmar contraseña</label>
             <input
-              name="contraseña"
+              name="confirmar"
               type="password"
-              value={formulario.contraseña}
+              value={formulario.confirmar}
               onChange={manejarCambio}
               className="w-full input rounded-lg"
               placeholder="••••••••"
             />
-            {errores.contraseña && <p className="text-red-600 text-sm">{errores.contraseña}</p>}
-            {modo === 'inicio' && (
-              <div className="mt-2 text-right">
-                <button
-                  type="button"
-                  className="text-xs text-blue-600 hover:underline"
-                  onClick={recuperarContraseña}
-                  tabIndex={-1}
-                >
-                  He olvidado mi contraseña
-                </button>
-              </div>
-            )}
+            {errores.confirmar && <p className="text-red-600 text-sm">{errores.confirmar}</p>}
           </div>
+        )}
 
-          {modo === 'registro' && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Confirmar contraseña</label>
-              <input
-                name="confirmar"
-                type="password"
-                value={formulario.confirmar}
-                onChange={manejarCambio}
-                className="w-full input rounded-lg"
-                placeholder="••••••••"
-              />
-              {errores.confirmar && <p className="text-red-600 text-sm">{errores.confirmar}</p>}
-            </div>
-          )}
+        <div className="flex items-center gap-2">
+          <input
+            id="mantenerSesion"
+            name="mantenerSesion"
+            type="checkbox"
+            checked={formulario.mantenerSesion}
+            onChange={manejarCambio}
+            className="h-4 w-4 rounded"
+          />
+          <label htmlFor="mantenerSesion" className="text-sm xl:text-base text-gray-700">
+            Mantener sesión iniciada (cookies)
+          </label>
+        </div>
 
-          <div className="flex items-center gap-2">
-            <input
-              id="mantenerSesion"
-              name="mantenerSesion"
-              type="checkbox"
-              checked={formulario.mantenerSesion}
-              onChange={manejarCambio}
-              className="h-4 w-4 rounded"
-            />
-            <label htmlFor="mantenerSesion" className="text-sm text-gray-700">
-              Mantener sesión iniciada (cookies)
-            </label>
-          </div>
+        <button
+          type="submit"
+          className="w-full py-2 xl:py-3 text-sm xl:text-base font-medium bg-primary text-white rounded-lg hover:bg-primaryDark transition"
+        >
+          {modo === 'inicio' ? 'Entrar' : 'Crear cuenta'}
+        </button>
+      </motion.form>
+    </AnimatePresence>
 
-          <button
-            type="submit"
-            className="w-full py-2 text-sm font-medium bg-primary text-white rounded-lg hover:bg-primaryDark transition"
-          >
-            {modo === 'inicio' ? 'Entrar' : 'Crear cuenta'}
-          </button>
-        </motion.form>
-      </AnimatePresence>
-
-
-      {/* Popup de respuesta */}
-      {popup.visible && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm px-4">
-          <div
-            className={`bg-white border rounded-2xl p-6 max-w-md w-full mx-auto text-center animate-bounce-in ${popup.type === 'success'
+    {/* Popup de respuesta */}
+    {popup.visible && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm px-4">
+        <div
+          className={`bg-white border rounded-2xl p-6 max-w-md w-full mx-auto text-center animate-bounce-in ${
+            popup.type === 'success'
               ? 'border-white'
               : popup.type === 'error'
                 ? 'border-danger'
                 : 'border-warning'
-              }`}
-          >
-            <div className="flex flex-col items-center space-y-4">
-              {popup.type === 'success' ? (
-                <FiCheckCircle size={48} className="text-primaryStrong animate-pop" />
-              ) : popup.type === 'error' ? (
-                <FiXCircle size={48} className="text-danger animate-pop" />
-              ) : (
-                <FiAlertTriangle size={48} className="text-warning animate-pop" />
-              )}
-              <h2 className={`text-xl font-serif font-semibold ${popup.type === 'success'
+          }`}
+        >
+          <div className="flex flex-col items-center space-y-4">
+            {popup.type === 'success' ? (
+              <FiCheckCircle size={48} className="text-primaryStrong animate-pop" />
+            ) : popup.type === 'error' ? (
+              <FiXCircle size={48} className="text-danger animate-pop" />
+            ) : (
+              <FiAlertTriangle size={48} className="text-warning animate-pop" />
+            )}
+            <h2 className={`text-xl xl:text-2xl font-serif font-semibold ${
+              popup.type === 'success'
                 ? 'text-primary'
                 : popup.type === 'error'
                   ? 'text-danger'
                   : 'text-warning'
-                }`}>
-                {popup.type === 'success'
-                  ? '¡Éxito!'
-                  : popup.type === 'error'
-                    ? '¡Error!'
-                    : '¡Atención!'}
-              </h2>
-              <p className="text-sm text-text">{popup.message}</p>
-              {popup.secondary && <p className="text-sm text-tertiary">{popup.secondary}</p>}
-              <p className="text-xs text-tertiary">
-                {popup.type === 'success'
-                  ? 'Serás redirigido en 3 segundos...'
-                  : 'Este mensaje se cerrará automáticamente.'}
-              </p>
-            </div>
+            }`}>
+              {popup.type === 'success'
+                ? '¡Éxito!'
+                : popup.type === 'error'
+                  ? '¡Error!'
+                  : '¡Atención!'}
+            </h2>
+            <p className="text-sm xl:text-base text-text">{popup.message}</p>
+            {popup.secondary && <p className="text-sm text-tertiary">{popup.secondary}</p>}
+            <p className="text-xs xl:text-sm text-tertiary">
+              {popup.type === 'success'
+                ? 'Serás redirigido en 3 segundos...'
+                : 'Este mensaje se cerrará automáticamente.'}
+            </p>
           </div>
         </div>
-      )}
-    </div>
-  )
+      </div>
+    )}
+  </div>
+);
+
 
 }
 

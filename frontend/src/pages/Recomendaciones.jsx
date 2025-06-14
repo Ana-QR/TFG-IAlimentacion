@@ -113,112 +113,113 @@ const Recomendaciones = () => {
   }, [productos, token, modoIA]);
 
   return (
-    <div className="flex-1 max-w-5xl mx-auto py-8 px-4 space-y-10">
-      <div className="flex flex-col items-center space-y-2 text-center">
-        <h1 className="text-2xl sm:text-3xl font-serif text-primary flex items-center gap-2">
-          Recomendaciones de Supermercado
-        </h1>
-        <p className="text-sm sm:text-base text-gray-500">
-          Generadas en función de tu lista de compra
-        </p>
+  <div className="flex-1 w-full max-w-5xl xl:max-w-6xl 2xl:max-w-screen-xl mx-auto py-8 xl:py-12 px-4 xl:px-10 space-y-10">
+    <div className="flex flex-col items-center space-y-2 text-center">
+      <h1 className="text-2xl sm:text-3xl xl:text-4xl font-serif text-primary flex items-center gap-2">
+        Recomendaciones de Supermercado
+      </h1>
+      <p className="text-sm sm:text-base xl:text-lg text-gray-500">
+        Generadas en función de tu lista de compra
+      </p>
+    </div>
+
+    <div className="flex justify-end">
+      <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-xl shadow-sm border border-gray-300">
+        <label htmlFor="modo" className="text-sm xl:text-base text-gray-600">Modo IA:</label>
+        <select
+          id="modo"
+          value={modoIA}
+          onChange={(e) => setModoIA(e.target.value)}
+          className="text-sm xl:text-base text-gray-800 bg-transparent focus:outline-none"
+        >
+          <option value="hibrido">Híbrido (Gemini → OpenAI)</option>
+          <option value="gemini">Solo Gemini</option>
+          <option value="openai">Solo OpenAI</option>
+        </select>
+      </div>
+    </div>
+
+    {/* Precio */}
+    <div className="bg-gradient-to-br from-gray-100 to-white shadow-lg rounded-3xl p-6 md:p-8 xl:p-10 space-y-6 border border-gray-300 animate-fade-in">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <h2 className="text-xl sm:text-2xl xl:text-3xl font-serif text-secondaryDark">
+          Mejor supermercado por precio
+        </h2>
+        {loading && <FiRefreshCw className="animate-spin text-secondaryDark" size={24} />}
       </div>
 
-      <div className="flex justify-end">
-        <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-xl shadow-sm border border-gray-300">
-          <label htmlFor="modo" className="text-sm text-gray-600">Modo IA:</label>
-          <select
-            id="modo"
-            value={modoIA}
-            onChange={(e) => setModoIA(e.target.value)}
-            className="text-sm text-gray-800 bg-transparent focus:outline-none"
-          >
-            <option value="hibrido">Híbrido (Gemini → OpenAI)</option>
-            <option value="gemini">Solo Gemini</option>
-            <option value="openai">Solo OpenAI</option>
-          </select>
-        </div>
-      </div>
-
-      {/* Precio */}
-      <div className="bg-gradient-to-br from-gray-100 to-white shadow-lg rounded-3xl p-6 md:p-8 space-y-6 border border-gray-300 animate-fade-in">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <h2 className="text-xl sm:text-2xl font-serif text-secondaryDark">
-            Mejor supermercado por precio
-          </h2>
-          {loading && <FiRefreshCw className="animate-spin text-secondaryDark" size={24} />}
-        </div>
-
-        <div className="space-y-4">
-          {productos.map((p, i) => (
-            <div key={i} className="flex flex-col sm:flex-row justify-between gap-4 bg-white p-4 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition">
-              <div className="flex items-center gap-3">
-                <div className="w-3 h-3 bg-sweetPink rounded-full" />
-                <span className="font-medium text-gray-800">{p}</span>
-              </div>
-              <div className="text-sm text-gray-700 font-semibold">{porPrecio[i]}</div>
+      <div className="space-y-4">
+        {productos.map((p, i) => (
+          <div key={i} className="flex flex-col sm:flex-row justify-between gap-4 bg-white p-4 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition">
+            <div className="flex items-center gap-3">
+              <div className="w-3 h-3 bg-sweetPink rounded-full" />
+              <span className="font-medium text-gray-800 text-sm xl:text-base">{p}</span>
             </div>
-          ))}
-        </div>
+            <div className="text-sm xl:text-base text-gray-700 font-semibold">{porPrecio[i]}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    {/* Nutrición */}
+    <div className="bg-gradient-to-br from-gray-100 to-white shadow-lg rounded-3xl p-6 md:p-8 xl:p-10 space-y-6 border border-gray-300 animate-fade-in">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <h2 className="text-xl sm:text-2xl xl:text-3xl font-serif text-tertiaryDark">
+          Mejor supermercado por valoración nutricional
+        </h2>
+        {loading && <FiRefreshCw className="animate-spin text-tertiaryDark" size={24} />}
       </div>
 
-      {/* Nutrición */}
-      <div className="bg-gradient-to-br from-gray-100 to-white shadow-lg rounded-3xl p-6 md:p-8 space-y-6 border border-gray-300 animate-fade-in">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <h2 className="text-xl sm:text-2xl font-serif text-tertiaryDark">
-            Mejor supermercado por valoración nutricional
-          </h2>
-          {loading && <FiRefreshCw className="animate-spin text-tertiaryDark" size={24} />}
-        </div>
-
-        <div className="space-y-4">
-          {productos.map((p, i) => (
-            <div key={`${i}-nutri`} className="flex flex-col sm:flex-row justify-between gap-4 bg-white p-4 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition">
-              <div className="flex items-center gap-3">
-                <div className="w-3 h-3 bg-primaryStrong rounded-full" />
-                <span className="font-medium text-gray-800">{p}</span>
-              </div>
-              <div className="text-sm text-gray-700 font-semibold">{porNutricion[i]}</div>
+      <div className="space-y-4">
+        {productos.map((p, i) => (
+          <div key={`${i}-nutri`} className="flex flex-col sm:flex-row justify-between gap-4 bg-white p-4 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition">
+            <div className="flex items-center gap-3">
+              <div className="w-3 h-3 bg-primaryStrong rounded-full" />
+              <span className="font-medium text-gray-800 text-sm xl:text-base">{p}</span>
             </div>
-          ))}
-        </div>
+            <div className="text-sm xl:text-base text-gray-700 font-semibold">{porNutricion[i]}</div>
+          </div>
+        ))}
       </div>
+    </div>
 
-      {/* Popup */}
-      {popup.visible && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
-          <div className={`bg-white border rounded-2xl p-6 w-full max-w-sm mx-4 text-center animate-bounce-in
-            ${popup.type === 'success'
-              ? 'border-primary'
-              : popup.type === 'error'
-                ? 'border-danger'
-                : 'border-warning'
-            }`}>
-            <div className="flex flex-col items-center space-y-4">
-              {popup.type === 'success' ? (
-                <FiCheckCircle size={48} className="text-primary animate-pop" />
-              ) : popup.type === 'error' ? (
-                <FiXCircle size={48} className="text-danger animate-pop" />
-              ) : (
-                <FiAlertTriangle size={48} className="text-warning animate-pop" />
-              )}
-              <h2 className="text-xl font-semibold">
-                {popup.type === 'success'
-                  ? '¡Éxito!'
-                  : popup.type === 'error'
-                    ? '¡Error!'
-                    : '¡Atención!'}
-              </h2>
-              <p className="text-sm text-gray-700">{popup.message}</p>
-              {popup.secondary && (
-                <p className="text-xs text-tertiary">{popup.secondary}</p>
-              )}
-              <p className="text-xs text-gray-400">Este mensaje se cerrará automáticamente.</p>
-            </div>
+    {/* Popup */}
+    {popup.visible && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
+        <div className={`bg-white border rounded-2xl p-6 w-full max-w-sm mx-4 text-center animate-bounce-in
+          ${popup.type === 'success'
+            ? 'border-primary'
+            : popup.type === 'error'
+              ? 'border-danger'
+              : 'border-warning'
+          }`}>
+          <div className="flex flex-col items-center space-y-4">
+            {popup.type === 'success' ? (
+              <FiCheckCircle size={48} className="text-primary animate-pop" />
+            ) : popup.type === 'error' ? (
+              <FiXCircle size={48} className="text-danger animate-pop" />
+            ) : (
+              <FiAlertTriangle size={48} className="text-warning animate-pop" />
+            )}
+            <h2 className="text-xl xl:text-2xl font-semibold">
+              {popup.type === 'success'
+                ? '¡Éxito!'
+                : popup.type === 'error'
+                  ? '¡Error!'
+                  : '¡Atención!'}
+            </h2>
+            <p className="text-sm xl:text-base text-gray-700">{popup.message}</p>
+            {popup.secondary && (
+              <p className="text-xs xl:text-sm text-tertiary">{popup.secondary}</p>
+            )}
+            <p className="text-xs xl:text-sm text-gray-400">Este mensaje se cerrará automáticamente.</p>
           </div>
         </div>
-      )}
-    </div>
-  );
+      </div>
+    )}
+  </div>
+);
+
 };
 
 export default Recomendaciones;
