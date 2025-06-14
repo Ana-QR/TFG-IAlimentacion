@@ -20,11 +20,12 @@ const authenticate = (req, res, next) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     // Adjunta info del usuario al request para usar en los controladores
+    req.userId = decoded.id_usuario;
     req.user = { id_usuario: decoded.id_usuario };
     next();
   } catch (err) {
-    console.error("Token inválido:", err.message);
-    return res.status(401).json({ error: "Token inválido o expirado." });
+    console.error("Error al verificar token:", err.message);
+    return res.status(401).json({ error: "Token inválido o expirado" });
   }
 };
 

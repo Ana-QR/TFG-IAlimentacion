@@ -12,7 +12,6 @@ const app = express();
 const allowedOrigins = [
   "http://localhost:5173",
   "https://ialimentacion.vercel.app",
-  "https://ialimentacion-8d116nj85-ana-qrs-projects.vercel.app", // por si usas preview de Vercel
 ];
 
 // ✅ Middleware CORS
@@ -21,11 +20,10 @@ app.use(cors({
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      console.warn(`❌ Origen bloqueado por CORS: ${origin}`);
       callback(new Error("Origen no permitido por CORS"));
     }
   },
-  credentials: true,
+  credentials: true
 }));
 
 // ✅ Middleware para preflight (CORS OPTIONS)
