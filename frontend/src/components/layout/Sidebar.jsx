@@ -1,7 +1,8 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { FiTrash2 } from 'react-icons/fi';
+import { FiTrash2, FiShoppingCart, FiBookOpen, LuLeaf } from 'react-icons/fi';
+
 
 const Sidebar = ({ isOpen, onHistorialActualizado }) => {
   const [productos, setProductos] = useState([]);
@@ -75,32 +76,44 @@ const Sidebar = ({ isOpen, onHistorialActualizado }) => {
           animate={{ x: 0, opacity: 1 }}
           exit={{ x: -260, opacity: 0 }}
           transition={{ duration: 0.3, ease: 'easeInOut' }}
-          className="w-full md:w-64 bg-primaryStrong p-4 flex flex-col z-20 relative md:static md:top-0"
+          className="w-full md:w-64 bg-primaryStrong p-4 flex flex-col z-20 relative md:static md:top-0 text-white"
         >
-          {location.pathname !== '/lista' && (
+          <nav className="space-y-3 mb-6">
+            {location.pathname !== '/' && (
+              <Link
+                to="/"
+                className="flex items-center gap-3 text-sm font-medium hover:text-gray-200 transition-colors"
+              >
+                <span className="w-6 h-6 flex items-center justify-center rounded-full bg-white/20 text-white">
+                  <FiShoppingCart size={16} />
+                </span>
+                Lista de la Compra
+              </Link>
+            )}
+
             <Link
-              to="/lista"
-              className="mb-2 px-4 py-2 bg-sky-600 text-white rounded-lg hover:bg-opacity-80 transition-colors text-center md:text-left"
+              to="/recomendaciones"
+              className="flex items-center gap-3 text-sm font-medium hover:text-gray-200 transition-colors"
             >
-              Ir a lista de la compra
+              <span className="w-6 h-6 flex items-center justify-center rounded-full bg-white/20 text-white">
+                <LuLeaf size={16} />
+              </span>
+              Recomendaciones
             </Link>
-          )}
 
-          <Link
-            to="/recomendaciones"
-            className="mb-2 px-4 py-2 bg-sweetPink text-background rounded-lg hover:bg-opacity-70 transition-colors text-center md:text-left"
-          >
-            Recomendaciones de productos
-          </Link>
+            <Link
+              to="/recetas"
+              className="flex items-center gap-3 text-sm font-medium hover:text-gray-200 transition-colors"
+            >
+              <span className="w-6 h-6 flex items-center justify-center rounded-full bg-white/20 text-white">
+                <FiBookOpen size={16} />
+              </span>
+              Recetas
+            </Link>
+          </nav>
 
-          <Link
-            to="/recetas"
-            className="px-4 py-2 bg-sweetPink text-background rounded-lg hover:bg-opacity-70 transition-colors text-center md:text-left"
-          >
-            Ver recetas
-          </Link>
 
-          <h3 className="mt-4 py-2 text-sm font-semibold mb-2 text-gray-200 border-b border-white/20">
+          <h3 className="py-2 text-sm font-semibold mb-2 text-gray-200 border-b border-white/20">
             Productos guardados:
           </h3>
 
