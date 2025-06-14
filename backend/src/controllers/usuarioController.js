@@ -8,8 +8,8 @@ const nodemailer = require('nodemailer');
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
+    user: process.env.CORREO_REMITENTE,
+    pass: process.env.CORREO_CONTRASENA,
   },
 });
 
@@ -106,7 +106,7 @@ const recuperarPassword = async (req, res) => {
     });
 
     await transporter.sendMail({
-      from: `"IAlimentación" <${process.env.EMAIL_USER}>`,
+      from: `"IAlimentación" <${process.env.CORREO_REMITENTE}>`,
       to: email,
       subject: 'Recuperación de contraseña - IAlimentación',
       html: `
@@ -141,7 +141,7 @@ const enviarNuevaPasswordPorCorreo = async (req, res) => {
     });
 
     await transporter.sendMail({
-      from: `"IAlimentación" <${process.env.EMAIL_USER}>`,
+      from: `"IAlimentación" <${process.env.CORREO_REMITENTE}>`,
       to: usuario.email,
       subject: 'Nueva contraseña generada - IAlimentación',
       html: `

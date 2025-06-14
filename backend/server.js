@@ -42,3 +42,22 @@ const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`✅ Servidor activo en http://localhost:${PORT}`);
 });
+
+const path = require("path");
+const fs = require("fs");
+
+// 🔁 Sirve el frontend en producción
+if (process.env.NODE_ENV === "production") {
+  const frontendPath = path.join(__dirname, "../frontend/dist");
+
+  app.use(express.static(frontendPath));
+
+  app.get("*", (req, res) => {
+    const indexPath = path.join(frontendPath, "index.html");
+    if (fs.existsSync(indexPath)) {
+      res.sendFile(indexPath);
+    } else {
+      res.status(404).send("No se encontró index.html");
+    }
+  });
+}
