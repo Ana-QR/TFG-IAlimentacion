@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { FiTrash2, FiShoppingCart, FiBookOpen} from 'react-icons/fi';
+import { FiTrash2, FiShoppingCart, FiBookOpen } from 'react-icons/fi';
 import { LuLeaf } from 'react-icons/lu';
 
 
@@ -80,17 +80,15 @@ const Sidebar = ({ isOpen, onHistorialActualizado }) => {
           className="w-full md:w-64 bg-primaryStrong p-4 flex flex-col z-20 relative md:static md:top-0 text-white"
         >
           <nav className="space-y-3 mb-6">
-            {location.pathname !== '/' && (
-              <Link
-                to="/"
-                className="flex items-center gap-3 text-sm font-medium hover:text-gray-200 transition-colors"
-              >
-                <span className="w-6 h-6 flex items-center justify-center rounded-full bg-white/20 text-white">
-                  <FiShoppingCart size={16} />
-                </span>
-                Lista de la Compra
-              </Link>
-            )}
+            <Link
+              to="/"
+              className="flex items-center gap-3 text-sm font-medium hover:text-gray-200 transition-colors"
+            >
+              <span className="w-6 h-6 flex items-center justify-center rounded-full bg-white/20 text-white">
+                <FiShoppingCart size={16} />
+              </span>
+              Lista de la Compra
+            </Link>
 
             <Link
               to="/recomendaciones"
