@@ -11,7 +11,7 @@ const addProductoToHistorial = async (req, res) => {
   if (!nombreProducto) return res.status(400).json({ error: "El nombre del producto es requerido" });
 
   try {
-    // Verificar o crear producto
+    // Verificar si el producto existe o crearlo
     let producto = await prisma.producto.findUnique({
       where: { nombre: nombreProducto },
     });
@@ -22,7 +22,7 @@ const addProductoToHistorial = async (req, res) => {
       });
     }
 
-    // Añadir al historial si no está
+    // Verificar si ya está en el historial
     const yaIncluido = await prisma.usuario.findFirst({
       where: {
         id_usuario: userId,
@@ -43,7 +43,7 @@ const addProductoToHistorial = async (req, res) => {
       });
     }
 
-    res.status(200).json({ message: "Producto añadido al historial" });
+    res.status(200).json({ mensaje: "Producto añadido al historial" });
   } catch (error) {
     console.error("Error añadiendo al historial:", error);
     res.status(500).json({ error: "Error interno al añadir al historial" });
@@ -76,7 +76,7 @@ const removeProductoFromHistorial = async (req, res) => {
       },
     });
 
-    res.status(200).json({ message: "Producto eliminado del historial" });
+    res.status(200).json({ mensaje: "Producto eliminado del historial" });
   } catch (error) {
     console.error("Error eliminando del historial:", error);
     res.status(500).json({ error: "Error interno al eliminar del historial" });
@@ -84,17 +84,16 @@ const removeProductoFromHistorial = async (req, res) => {
 };
 
 // Obtiene el historial completo del usuario
-// backend/src/controllers/historialController.js
 const getHistorial = async (req, res) => {
+  const userId = req.user?.id_usuario;
+
+  if (!userId) {
+    return res.status(401).json({ error: "No autorizado" });
+  }
+
   try {
-    const id_usuario = req.userId;
-
-    if (!id_usuario) {
-      return res.status(401).json({ error: "No autorizado" });
-    }
-
     const usuario = await prisma.usuario.findUnique({
-      where: { id_usuario },
+      where: { id_usuario: userId },
       include: { historial: true }
     });
 
@@ -108,8 +107,6 @@ const getHistorial = async (req, res) => {
     res.status(500).json({ error: "Error al obtener historial" });
   }
 };
-
-
 
 module.exports = {
   addProductoToHistorial,

@@ -8,13 +8,25 @@ const fs = require("fs");
 
 const app = express();
 
-// ✅ CORS: permite solicitudes desde el frontend en Vercel y local
-app.use(cors({
-  origin: ['http://localhost:5173', 'https://ialimentacion.vercel.app'],
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true,
-}));
+// ✅ CORS: permite solicitudes desde frontend (Vercel y local)
+const allowedOrigins = [
+  'http://localhost:5173',
+  'https://ialimentacion.vercel.app'
+];
+
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+  }
+  res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.setHeader("Access-Control-Allow-Credentials", "true");
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(204); // importante: 204 evita errores de CORS preflight
+  }
+  next();
+});
 
 // ✅ Middleware para JSON
 app.use(express.json());
@@ -45,10 +57,9 @@ app.use("/api/ia", iaRoutes);
 // 🔁 Servir frontend en producción (solo si no es una ruta /api)
 if (process.env.NODE_ENV === "production") {
   const frontendPath = path.join(__dirname, "../frontend/dist");
-
   app.use(express.static(frontendPath));
 
-  // ✅ Evita interferencias con rutas tipo /api/...
+  // Redirige todo excepto /api a index.html
   app.get(/^\/(?!api).*/, (req, res) => {
     const indexPath = path.join(frontendPath, "index.html");
     if (fs.existsSync(indexPath)) {

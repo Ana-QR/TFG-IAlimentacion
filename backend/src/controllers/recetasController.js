@@ -1,4 +1,3 @@
-// recetasController.js
 const { PrismaClient } = require("@prisma/client");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const { OpenAI } = require("openai");
@@ -24,26 +23,33 @@ Devuélvelo en formato JSON puro (sin \`\`\`json ni \`\`\`, ni ningún texto ant
     "description": "Breve descripción",
     "ingredients": ["ingrediente1", "ingrediente2", ...],
     "steps": ["Paso 1", "Paso 2", ...]
-  },
-  ...
+  }
 ]`.trim();
 
   const usarGemini = async () => {
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-    const result = await model.generateContent(prompt);
-    const texto = result.response.text().trim();
-    return JSON.parse(texto);
+    try {
+      const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const result = await model.generateContent(prompt);
+      const texto = result.response.text().trim();
+      return JSON.parse(texto);
+    } catch (err) {
+      throw new Error("Error usando Gemini: " + err.message);
+    }
   };
 
   const usarOpenAI = async () => {
-    const completion = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0.7,
-    });
-    const texto = completion.choices[0].message.content.trim();
-    return JSON.parse(texto);
+    try {
+      const completion = await openai.chat.completions.create({
+        model: "gpt-3.5-turbo",
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.7,
+      });
+      const texto = completion.choices[0].message.content.trim();
+      return JSON.parse(texto);
+    } catch (err) {
+      throw new Error("Error usando OpenAI: " + err.message);
+    }
   };
 
   try {
@@ -62,7 +68,7 @@ Devuélvelo en formato JSON puro (sin \`\`\`json ni \`\`\`, ni ningún texto ant
         recetas = await usarGemini();
         modelo = "gemini";
       } catch (errGemini) {
-        console.warn("Gemini falló, usando OpenAI:", errGemini);
+        console.warn("Gemini falló, usando OpenAI:", errGemini.message);
         recetas = await usarOpenAI();
         modelo = "openai";
         aviso = "Gemini no estaba disponible. Se ha usado OpenAI (GPT-3.5-turbo), que puede implicar costes.";
@@ -75,13 +81,17 @@ Devuélvelo en formato JSON puro (sin \`\`\`json ni \`\`\`, ni ningún texto ant
 
     res.status(200).json({ recetas, modelo, aviso });
   } catch (error) {
-    console.error("Error generando recetas:", error);
+    console.error("Error generando recetas:", error.message);
     res.status(500).json({ error: "Error al generar las recetas con IA.", detalle: error.message });
   }
 };
 
 const generarRecetasDesdeHistorial = async (req, res) => {
-  const userId = req.userId;
+  const userId = req.user?.id_usuario;
+
+  if (!userId) {
+    return res.status(401).json({ error: "No autorizado." });
+  }
 
   try {
     const usuario = await prisma.usuario.findUnique({
@@ -89,16 +99,16 @@ const generarRecetasDesdeHistorial = async (req, res) => {
       include: { historial: true },
     });
 
-    const productos = usuario?.historial || [];
-    if (productos.length === 0) {
+    if (!usuario || usuario.historial.length === 0) {
       return res.status(400).json({ error: "Tu historial está vacío." });
     }
 
-    const nombresProductos = productos.map((p) => p.nombre);
+    const nombresProductos = usuario.historial.map((p) => p.nombre);
     req.body.productos = nombresProductos;
+
     await generarRecetas(req, res);
   } catch (error) {
-    console.error("Error generando recetas desde historial:", error);
+    console.error("Error generando recetas desde historial:", error.message);
     res.status(500).json({ error: "Error generando recetas desde historial." });
   }
 };

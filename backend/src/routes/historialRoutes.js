@@ -1,16 +1,20 @@
 const express = require("express");
 const router = express.Router();
 const authenticate = require("../middleware/authMiddleware");
+
 const {
   addProductoToHistorial,
   removeProductoFromHistorial,
   getHistorial,
 } = require("../controllers/historialController");
 
-// Cambié 'agregarAlHistorial' por 'addProductoToHistorial' para que coincida con lo que exporta el controlador
-router.get("/", authenticate, getHistorial); // asegúrate que exista
+// ✅ Obtener historial del usuario
+router.get("/", authenticate, getHistorial);
+
+// ✅ Añadir producto al historial
 router.post("/add", authenticate, addProductoToHistorial);
+
+// ✅ Eliminar producto del historial
 router.post("/remove", authenticate, removeProductoFromHistorial);
-router.get("/historial", authenticate, getHistorial);
 
 module.exports = router;

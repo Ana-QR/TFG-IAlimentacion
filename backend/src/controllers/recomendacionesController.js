@@ -1,4 +1,3 @@
-// recomendacionesController.js
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const { PrismaClient } = require("@prisma/client");
 const { OpenAI } = require("openai");
@@ -8,8 +7,12 @@ const prisma = new PrismaClient();
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 const getRecomendaciones = async (req, res) => {
-  const userId = req.userId;
+  const userId = req.user?.id_usuario;
   const { id_lista } = req.body;
+
+  if (!userId || !id_lista) {
+    return res.status(400).json({ error: "Faltan datos." });
+  }
 
   try {
     const lista = await prisma.listaCompra.findFirst({
@@ -27,7 +30,7 @@ const getRecomendaciones = async (req, res) => {
 
     res.json({ productos, supermercadosPrecio, supermercadosNutricion });
   } catch (err) {
-    console.error("Error getRecomendaciones:", err);
+    console.error("Error en getRecomendaciones:", err.message);
     res.status(500).json({ error: "Error al obtener recomendaciones." });
   }
 };
@@ -46,16 +49,14 @@ Basándote en la ${preferencias}, para cada producto:
 - Justifica brevemente la elección.
 Devuélvelo solo como JSON, sin texto extra:
 [
-  { "producto": "...", "supermercado": "...", "motivo": "..." },
-  ...
+  { "producto": "...", "supermercado": "...", "motivo": "..." }
 ]`.trim();
 
   const intentarConGemini = async () => {
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     const result = await model.generateContent(prompt);
-    const response = await result.response;
-    return response.text();
+    return result.response.text();
   };
 
   const intentarConOpenAI = async () => {
@@ -68,11 +69,20 @@ Devuélvelo solo como JSON, sin texto extra:
   };
 
   const limpiarYParsearJSON = (text) => {
-    text = text.replace(/```json/gi, '').replace(/```/g, '');
-    const start = text.indexOf('[');
-    const end = text.lastIndexOf(']');
-    if (start === -1 || end === -1) throw new Error("No se encontró JSON en la respuesta IA");
-    return JSON.parse(text.slice(start, end + 1));
+    try {
+      const limpio = text
+        .replace(/```json/gi, '')
+        .replace(/```/g, '')
+        .trim();
+
+      const start = limpio.indexOf('[');
+      const end = limpio.lastIndexOf(']');
+      if (start === -1 || end === -1) throw new Error("No se encontró JSON válido en la respuesta IA");
+
+      return JSON.parse(limpio.slice(start, end + 1));
+    } catch (e) {
+      throw new Error("Error al limpiar o parsear la respuesta IA: " + e.message);
+    }
   };
 
   try {
@@ -81,14 +91,15 @@ Devuélvelo solo como JSON, sin texto extra:
     if (modo === "gemini" || modo === "hibrido") {
       try {
         textoIA = await intentarConGemini();
-      } catch (err) {
-        if (modo === "gemini") throw err;
-        console.warn("Fallo Gemini, intentando con OpenAI...");
+      } catch (errGemini) {
+        if (modo === "gemini") throw errGemini;
+        console.warn("Gemini falló, usando OpenAI:", errGemini.message);
         textoIA = await intentarConOpenAI();
+        const recomendacion = limpiarYParsearJSON(textoIA);
         return res.status(200).json({
-          recomendacion: limpiarYParsearJSON(textoIA),
+          recomendacion,
           fallback: true,
-          mensaje: "Gemini no respondió. Se usó OpenAI como respaldo."
+          mensaje: "Gemini no respondió. Se ha usado OpenAI como respaldo.",
         });
       }
     } else if (modo === "openai") {
@@ -96,11 +107,14 @@ Devuélvelo solo como JSON, sin texto extra:
     }
 
     const recomendacion = limpiarYParsearJSON(textoIA);
-    if (!Array.isArray(recomendacion)) throw new Error("La IA no devolvió un array válido");
+
+    if (!Array.isArray(recomendacion)) {
+      throw new Error("La IA no devolvió un array válido.");
+    }
 
     res.status(200).json({ recomendacion });
   } catch (err) {
-    console.error("Error generarRecomendacionesIA:", err);
+    console.error("Error generarRecomendacionesIA:", err.message);
     res.status(500).json({ error: err.message || "Error generando recomendaciones IA." });
   }
 };

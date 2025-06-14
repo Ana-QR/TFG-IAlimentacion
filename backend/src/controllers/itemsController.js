@@ -1,16 +1,18 @@
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
+// Obtener la lista más reciente del usuario
 const getItems = async (req, res) => {
-  const userId = req.userId;
+  const userId = req.user?.id_usuario;
+  if (!userId) return res.status(401).json({ error: "No autorizado" });
+
   try {
     const lista = await prisma.listaCompra.findFirst({
       where: { id_usuario: userId },
       orderBy: { fecha_creacion: "desc" },
-      include: {
-        detalles: { include: { producto: true } },
-      },
+      include: { detalles: { include: { producto: true } } },
     });
+
     res.json(lista ? [lista] : []);
   } catch (error) {
     console.error("Error al obtener items:", error);
@@ -18,16 +20,17 @@ const getItems = async (req, res) => {
   }
 };
 
+// Obtener una lista por su ID
 const getListaById = async (req, res) => {
+  const userId = req.user?.id_usuario;
   const listaId = parseInt(req.params.id);
-  const userId = req.userId;
+
+  if (!userId) return res.status(401).json({ error: "No autorizado" });
 
   try {
     const lista = await prisma.listaCompra.findFirst({
       where: { id_lista: listaId, id_usuario: userId },
-      include: {
-        detalles: { include: { producto: true } },
-      },
+      include: { detalles: { include: { producto: true } } },
     });
 
     if (!lista) {
@@ -41,13 +44,12 @@ const getListaById = async (req, res) => {
   }
 };
 
+// Crear una nueva lista con un item
 const addItem = async (req, res) => {
-  const userId = req.userId;
+  const userId = req.user?.id_usuario;
   const { nombreLista, nombreProducto, cantidad } = req.body;
 
-  if (!userId) {
-    return res.status(401).json({ error: "Usuario no autenticado." });
-  }
+  if (!userId) return res.status(401).json({ error: "No autorizado" });
 
   try {
     const producto = await prisma.producto.upsert({
@@ -68,9 +70,7 @@ const addItem = async (req, res) => {
           },
         },
       },
-      include: {
-        detalles: { include: { producto: true } },
-      },
+      include: { detalles: { include: { producto: true } } },
     });
 
     res.status(201).json(lista);
@@ -80,10 +80,13 @@ const addItem = async (req, res) => {
   }
 };
 
+// Añadir un item a una lista existente
 const addItemToExistingList = async (req, res) => {
-  const userId = req.userId;
+  const userId = req.user?.id_usuario;
   const listaId = parseInt(req.params.id);
   const { nombreProducto, cantidad } = req.body;
+
+  if (!userId) return res.status(401).json({ error: "No autorizado" });
 
   try {
     const lista = await prisma.listaCompra.findFirst({
@@ -120,10 +123,13 @@ const addItemToExistingList = async (req, res) => {
   }
 };
 
+// Actualizar el nombre de una lista
 const updateListaNombre = async (req, res) => {
-  const userId = req.userId;
+  const userId = req.user?.id_usuario;
   const listaId = parseInt(req.params.id);
   const { nuevoNombre } = req.body;
+
+  if (!userId) return res.status(401).json({ error: "No autorizado" });
 
   try {
     const lista = await prisma.listaCompra.findFirst({
@@ -147,12 +153,11 @@ const updateListaNombre = async (req, res) => {
   }
 };
 
+// Eliminar un item (detalle) de una lista
 const deleteItem = async (req, res) => {
-  const { id } = req.params;
+  const id = parseInt(req.params.id);
   try {
-    await prisma.detalleListaCompra.delete({
-      where: { id_detalle: parseInt(id) },
-    });
+    await prisma.detalleListaCompra.delete({ where: { id_detalle: id } });
     res.status(204).end();
   } catch (error) {
     console.error("Error al eliminar item:", error);
@@ -160,12 +165,11 @@ const deleteItem = async (req, res) => {
   }
 };
 
+// Eliminar un producto completamente
 const deleteProducto = async (req, res) => {
   const { nombre } = req.params;
   try {
-    await prisma.producto.deleteMany({
-      where: { nombre },
-    });
+    await prisma.producto.deleteMany({ where: { nombre } });
     res.status(204).end();
   } catch (error) {
     console.error("Error al borrar producto:", error);

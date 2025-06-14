@@ -10,17 +10,19 @@ const {
   enviarNuevaPasswordPorCorreo,
 } = require("../controllers/usuarioController");
 
-// Obtener y actualizar perfil
+// ✅ Obtener perfil del usuario autenticado
 router.get("/perfil", authenticate, obtenerPerfil);
+
+// ✅ Actualizar nombre del usuario
 router.put("/perfil", authenticate, actualizarPerfil);
 
-// Cambiar contraseña con la actual
+// ✅ Cambiar contraseña con la actual
 router.put("/cambiar-password", authenticate, cambiarPassword);
 
-// Recuperar contraseña si la has olvidado (sin token)
+// ✅ Recuperar contraseña olvidada (sin iniciar sesión)
 router.post("/recuperar-password", recuperarPassword);
 
-// Generar una nueva contraseña aleatoria desde el perfil (requiere estar logueado)
+// ✅ Generar nueva contraseña desde perfil (requiere estar logueado)
 router.post("/generar-password", authenticate, enviarNuevaPasswordPorCorreo);
 
 module.exports = router;

@@ -9,7 +9,9 @@ const registerUser = async (req, res) => {
   const { nombre, email, password } = req.body;
   try {
     const existingUser = await prisma.usuario.findUnique({ where: { email } });
-    if (existingUser) return res.status(400).json({ error: "El correo ya está registrado" });
+    if (existingUser) {
+      return res.status(400).json({ error: "El correo ya está registrado" });
+    }
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = await prisma.usuario.create({
@@ -21,15 +23,17 @@ const registerUser = async (req, res) => {
       },
     });
 
-    const token = jwt.sign({ id_usuario: newUser.id_usuario }, process.env.JWT_SECRET, { expiresIn: "7d" });
+    const token = jwt.sign({ id_usuario: newUser.id_usuario }, process.env.JWT_SECRET, {
+      expiresIn: "7d",
+    });
 
-    res.status(201).json({
+    return res.status(201).json({
       user: { id_usuario: newUser.id_usuario, nombre: newUser.nombre, email: newUser.email },
       token,
     });
   } catch (error) {
     console.error("Error al registrar usuario:", error);
-    res.status(500).json({ error: "Error al registrar usuario" });
+    return res.status(500).json({ error: "Error al registrar usuario" });
   }
 };
 
@@ -45,12 +49,14 @@ const loginUser = async (req, res) => {
       return res.status(400).json({ error: "Credenciales inválidas" });
     }
 
-    const token = jwt.sign({ id_usuario: user.id_usuario }, process.env.JWT_SECRET, { expiresIn: "7d" });
+    const token = jwt.sign({ id_usuario: user.id_usuario }, process.env.JWT_SECRET, {
+      expiresIn: "7d",
+    });
 
-    res.json({ user: { id_usuario: user.id_usuario, nombre: user.nombre }, token });
+    return res.json({ user: { id_usuario: user.id_usuario, nombre: user.nombre }, token });
   } catch (error) {
     console.error("Error al iniciar sesión:", error);
-    res.status(500).json({ error: "Error al iniciar sesión" });
+    return res.status(500).json({ error: "Error al iniciar sesión" });
   }
 };
 
@@ -85,10 +91,10 @@ const forgotPassword = async (req, res) => {
       text: `Tu nueva contraseña es: ${nuevaContraseña}\nPor seguridad, cámbiala después de iniciar sesión.`,
     });
 
-    res.json({ mensaje: "Se ha enviado una nueva contraseña a tu correo." });
+    return res.json({ mensaje: "Se ha enviado una nueva contraseña a tu correo." });
   } catch (error) {
     console.error("Error al enviar nueva contraseña:", error);
-    res.status(500).json({ error: "Error al recuperar la contraseña." });
+    return res.status(500).json({ error: "Error al recuperar la contraseña." });
   }
 };
 

@@ -6,10 +6,10 @@ const {
   generarRecomendacionesIA,
 } = require("../controllers/recomendacionesController");
 
-// Ruta base: obtiene supermercados por defecto
+// ✅ Obtener recomendaciones simples (mock o lógica básica)
 router.post("/", authenticate, getRecomendaciones);
 
-// Ruta IA híbrida: puede usar Gemini o OpenAI
+// ✅ Generar recomendaciones usando IA (Gemini/OpenAI)
 router.post("/generar", authenticate, generarRecomendacionesIA);
 
 module.exports = router;

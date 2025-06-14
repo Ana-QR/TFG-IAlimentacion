@@ -1,10 +1,12 @@
 const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
+require('dotenv').config();
 
-// Configuración segura de nodemailer
+const prisma = new PrismaClient();
+
+// Configuración del transporte de correos
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
@@ -31,78 +33,78 @@ const obtenerPerfil = async (req, res) => {
     if (!usuario) return res.status(404).json({ error: 'Usuario no encontrado' });
     res.json(usuario);
   } catch (error) {
-    console.error("Error al obtener perfil:", error);
+    console.error("Error al obtener perfil:", error.message);
     res.status(500).json({ error: 'Error interno al obtener perfil' });
   }
 };
 
-// Actualizar nombre de usuario
+// Actualizar nombre
 const actualizarPerfil = async (req, res) => {
   const userId = req.user?.id_usuario;
   const { nombre } = req.body;
 
-  if (!userId) return res.status(401).json({ error: 'No autorizado' });
+  if (!userId || !nombre?.trim()) {
+    return res.status(400).json({ error: 'Nombre inválido o no autorizado' });
+  }
 
   try {
-    const usuarioActualizado = await prisma.usuario.update({
+    const actualizado = await prisma.usuario.update({
       where: { id_usuario: userId },
       data: { nombre },
     });
 
-    res.json({
-      mensaje: 'Perfil actualizado correctamente',
-      nombre: usuarioActualizado.nombre,
-    });
+    res.json({ mensaje: 'Perfil actualizado correctamente', nombre: actualizado.nombre });
   } catch (error) {
-    console.error("Error al actualizar perfil:", error);
+    console.error("Error al actualizar perfil:", error.message);
     res.status(500).json({ error: 'Error interno al actualizar perfil' });
   }
 };
 
-// Cambiar contraseña con la actual
+// Cambiar contraseña
 const cambiarPassword = async (req, res) => {
   const userId = req.user?.id_usuario;
   const { contraseñaActual, nuevaContraseña } = req.body;
 
   if (!userId || !contraseñaActual || !nuevaContraseña) {
-    return res.status(400).json({ error: 'Debes proporcionar la contraseña actual y la nueva.' });
+    return res.status(400).json({ error: 'Faltan datos para cambiar la contraseña.' });
   }
 
   try {
     const usuario = await prisma.usuario.findUnique({ where: { id_usuario: userId } });
     if (!usuario) return res.status(404).json({ error: 'Usuario no encontrado' });
 
-    const valid = await bcrypt.compare(contraseñaActual, usuario.contraseña);
-    if (!valid) return res.status(400).json({ error: 'La contraseña actual no es correcta' });
+    const esValida = await bcrypt.compare(contraseñaActual, usuario.contraseña);
+    if (!esValida) return res.status(400).json({ error: 'La contraseña actual no es correcta' });
 
-    const nuevaHash = await bcrypt.hash(nuevaContraseña, 10);
+    const hash = await bcrypt.hash(nuevaContraseña, 10);
     await prisma.usuario.update({
       where: { id_usuario: userId },
-      data: { contraseña: nuevaHash },
+      data: { contraseña: hash },
     });
 
     res.json({ mensaje: 'Contraseña actualizada correctamente' });
   } catch (error) {
-    console.error('Error al cambiar contraseña:', error);
+    console.error('Error al cambiar contraseña:', error.message);
     res.status(500).json({ error: 'Error interno al cambiar contraseña' });
   }
 };
 
-// Recuperar contraseña olvidada (sin iniciar sesión)
+// Recuperar contraseña (sin login)
 const recuperarPassword = async (req, res) => {
-  try {
-    const { email } = req.body;
-    if (!email) return res.status(400).json({ error: 'Debes proporcionar un correo electrónico.' });
+  const { email } = req.body;
 
+  if (!email) return res.status(400).json({ error: 'Debes proporcionar un email válido.' });
+
+  try {
     const usuario = await prisma.usuario.findUnique({ where: { email } });
     if (!usuario) return res.status(404).json({ error: 'No existe un usuario con ese correo.' });
 
-    const nuevaPassword = crypto.randomBytes(6).toString("hex"); // 12 caracteres
-    const hashed = await bcrypt.hash(nuevaPassword, 10);
+    const nuevaPass = crypto.randomBytes(6).toString("hex");
+    const hash = await bcrypt.hash(nuevaPass, 10);
 
     await prisma.usuario.update({
       where: { email },
-      data: { contraseña: hashed },
+      data: { contraseña: hash },
     });
 
     await transporter.sendMail({
@@ -111,19 +113,19 @@ const recuperarPassword = async (req, res) => {
       subject: 'Recuperación de contraseña - IAlimentación',
       html: `
         <p>Hola ${usuario.nombre},</p>
-        <p>Tu nueva contraseña es: <b>${nuevaPassword}</b></p>
+        <p>Tu nueva contraseña es: <b>${nuevaPass}</b></p>
         <p>Te recomendamos cambiarla desde tu perfil una vez accedas.</p>
       `,
     });
 
     res.json({ mensaje: 'Se ha enviado una nueva contraseña a tu correo electrónico.' });
-  } catch (err) {
-    console.error('Error en recuperación de contraseña:', err.message, err);
+  } catch (error) {
+    console.error('Error en recuperación de contraseña:', error.message);
     res.status(500).json({ error: 'No se pudo enviar la nueva contraseña. Intenta más tarde.' });
   }
 };
 
-// Generar nueva contraseña desde el perfil (requiere login)
+// Nueva contraseña desde perfil (con login)
 const enviarNuevaPasswordPorCorreo = async (req, res) => {
   const userId = req.user?.id_usuario;
   if (!userId) return res.status(401).json({ error: 'No autorizado' });
@@ -132,12 +134,12 @@ const enviarNuevaPasswordPorCorreo = async (req, res) => {
     const usuario = await prisma.usuario.findUnique({ where: { id_usuario: userId } });
     if (!usuario) return res.status(404).json({ error: 'Usuario no encontrado' });
 
-    const nueva = crypto.randomBytes(6).toString("hex");
-    const nuevaHash = await bcrypt.hash(nueva, 10);
+    const nuevaPass = crypto.randomBytes(6).toString("hex");
+    const hash = await bcrypt.hash(nuevaPass, 10);
 
     await prisma.usuario.update({
       where: { id_usuario: userId },
-      data: { contraseña: nuevaHash },
+      data: { contraseña: hash },
     });
 
     await transporter.sendMail({
@@ -146,14 +148,14 @@ const enviarNuevaPasswordPorCorreo = async (req, res) => {
       subject: 'Nueva contraseña generada - IAlimentación',
       html: `
         <p>Hola ${usuario.nombre},</p>
-        <p>Tu nueva contraseña es: <b>${nueva}</b></p>
+        <p>Tu nueva contraseña es: <b>${nuevaPass}</b></p>
         <p>Te recomendamos cambiarla desde tu perfil una vez accedas.</p>
       `,
     });
 
     res.json({ mensaje: 'Nueva contraseña enviada por correo electrónico.' });
   } catch (error) {
-    console.error('Error al enviar nueva contraseña:', error.message, error);
+    console.error('Error al enviar nueva contraseña:', error.message);
     res.status(500).json({ error: 'No se pudo enviar la nueva contraseña.' });
   }
 };

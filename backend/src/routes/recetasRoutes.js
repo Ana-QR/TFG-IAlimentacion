@@ -6,10 +6,10 @@ const {
   generarRecetasDesdeHistorial,
 } = require("../controllers/recetasController");
 
-// Ruta directa: el usuario envía productos y puede elegir IA
+// ✅ Generar recetas desde productos enviados manualmente
 router.post("/", authenticate, generarRecetas);
 
-// Ruta desde historial (se usa para autogenerar)
+// ✅ Generar recetas a partir del historial del usuario
 router.post("/desde-historial", authenticate, generarRecetasDesdeHistorial);
 
 module.exports = router;
