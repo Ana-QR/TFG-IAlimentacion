@@ -14,7 +14,7 @@ const allowedOrigins = [
   "https://ialimentacion.vercel.app"
 ];
 
-// ✅ Middleware CORS correcto
+// ✅ Middleware CORS
 app.use(cors({
   origin: (origin, callback) => {
     if (!origin || allowedOrigins.includes(origin)) {
@@ -23,12 +23,10 @@ app.use(cors({
       callback(new Error("Origen no permitido por CORS"));
     }
   },
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true
 }));
 
-// ✅ Habilita preflight para todas las rutas
+// ✅ Middleware para preflight (CORS OPTIONS)
 app.options("*", cors());
 
 // ✅ Middleware para parsear JSON
@@ -56,19 +54,25 @@ app.use("/api/recetas", recetasRoutes);
 app.use("/api/usuario", usuarioRoutes);
 app.use("/api/ia", iaRoutes);
 
-// 🔁 Servir frontend en producción (solo si no es una ruta /api)
+// 🔁 Servir frontend en producción
 if (process.env.NODE_ENV === "production") {
   const frontendPath = path.join(__dirname, "../frontend/dist");
-  app.use(express.static(frontendPath));
+  
+  if (fs.existsSync(frontendPath)) {
+    app.use(express.static(frontendPath));
 
-  app.get(/^\/(?!api).*/, (req, res) => {
-    const indexPath = path.join(frontendPath, "index.html");
-    if (fs.existsSync(indexPath)) {
-      res.sendFile(indexPath);
-    } else {
-      res.status(404).send("No se encontró index.html");
-    }
-  });
+    // Redirige cualquier ruta que no empiece por /api al index.html
+    app.get(/^\/(?!api).*/, (req, res) => {
+      const indexPath = path.join(frontendPath, "index.html");
+      if (fs.existsSync(indexPath)) {
+        res.sendFile(indexPath);
+      } else {
+        res.status(404).send("No se encontró index.html");
+      }
+    });
+  } else {
+    console.warn("⚠️ No se encontró la carpeta de frontend en producción.");
+  }
 }
 
 // 🚀 Iniciar servidor
