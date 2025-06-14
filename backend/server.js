@@ -15,17 +15,15 @@ const allowedOrigins = [
   "https://ialimentacion-qkgup5jop-ana-qrs-projects.vercel.app"
 ];
 
-// ✅ Middleware CORS
 app.use(cors({
   origin: (origin, callback) => {
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      console.error("Origen bloqueado por CORS:", origin);
       callback(new Error("Origen no permitido por CORS"));
     }
   },
-  credentials: true
+  credentials: true,
 }));
 
 // ✅ Middleware para preflight (CORS OPTIONS)
