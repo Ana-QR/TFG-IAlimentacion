@@ -13,11 +13,8 @@ app.use(cors({
   origin: ['http://localhost:5173', 'https://ialimentacion.vercel.app'],
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true, // 🔑 Importante si usas tokens o cookies
+  credentials: true,
 }));
-
-// ✅ Permite respuestas a preflight OPTIONS (CORS preflight)
-app.options('*', cors());
 
 // ✅ Middleware para JSON
 app.use(express.json());
@@ -45,13 +42,14 @@ app.use("/api/recetas", recetasRoutes);
 app.use("/api/usuario", usuarioRoutes);
 app.use("/api/ia", iaRoutes);
 
-// 🔁 Servir frontend en producción
+// 🔁 Servir frontend en producción (solo si no es una ruta /api)
 if (process.env.NODE_ENV === "production") {
   const frontendPath = path.join(__dirname, "../frontend/dist");
 
   app.use(express.static(frontendPath));
 
-  app.get("*", (req, res) => {
+  // ✅ Evita interferencias con rutas tipo /api/...
+  app.get(/^\/(?!api).*/, (req, res) => {
     const indexPath = path.join(frontendPath, "index.html");
     if (fs.existsSync(indexPath)) {
       res.sendFile(indexPath);
