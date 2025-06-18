@@ -1,4 +1,3 @@
-// backend/server.js
 require("dotenv").config();
 
 const express = require("express");
@@ -19,20 +18,21 @@ const allowedOrigins = [
   "https://www.ialimentacion.es"
 ];
 
-app.use(cors({
+// ✅ Configuración de CORS
+const corsOptions = {
   origin: function (origin, callback) {
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      console.error('Origen bloqueado por CORS:', origin);
+      console.error('🌐 Origen bloqueado por CORS:', origin);
       callback(new Error('Origen no permitido por CORS'));
     }
   },
   credentials: true,
-}));
+};
 
-// ✅ Middleware para preflight (CORS OPTIONS)
-app.options("*", cors());
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions)); // Preflight con misma configuración
 
 // ✅ Middleware para parsear JSON
 app.use(express.json());
@@ -66,7 +66,6 @@ if (process.env.NODE_ENV === "production") {
   if (fs.existsSync(frontendPath)) {
     app.use(express.static(frontendPath));
 
-    // Redirige cualquier ruta que no empiece por /api al index.html
     app.get("*", (req, res) => {
       if (!req.path.startsWith("/api")) {
         const indexPath = path.join(frontendPath, "index.html");
