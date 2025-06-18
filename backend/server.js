@@ -18,21 +18,21 @@ const allowedOrigins = [
   "https://www.ialimentacion.es"
 ];
 
-// ✅ Configuración de CORS
+// ✅ CORS corregido: no lanza error si origen no permitido
 const corsOptions = {
-  origin: function (origin, callback) {
+  origin: (origin, callback) => {
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      console.error('🌐 Origen bloqueado por CORS:', origin);
-      callback(new Error('Origen no permitido por CORS'));
+      console.warn(`🌐 Origen bloqueado por CORS: ${origin}`);
+      callback(null, false); // no lanza error 500
     }
   },
   credentials: true,
 };
 
 app.use(cors(corsOptions));
-app.options("*", cors(corsOptions)); // Preflight con misma configuración
+app.options("*", cors(corsOptions)); // Preflight
 
 // ✅ Middleware para parsear JSON
 app.use(express.json());

@@ -1,7 +1,7 @@
 const jwt = require("jsonwebtoken");
 
 const authenticate = (req, res, next) => {
-  // ⚠️ Ignorar las peticiones preflight (CORS)
+  // Ignorar preflight CORS
   if (req.method === "OPTIONS") {
     return next();
   }
@@ -12,7 +12,6 @@ const authenticate = (req, res, next) => {
     return res.status(401).json({ error: "Token no proporcionado." });
   }
 
-  // Permite formatos: "Bearer <token>" o solo "<token>"
   const token = authHeader.startsWith("Bearer ")
     ? authHeader.split(" ")[1]
     : authHeader;
@@ -23,8 +22,6 @@ const authenticate = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    // Añadir datos del usuario al objeto request
     req.userId = decoded.id_usuario;
     req.user = { id_usuario: decoded.id_usuario };
     next();
