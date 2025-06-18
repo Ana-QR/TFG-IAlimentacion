@@ -15,7 +15,8 @@ const allowedOrigins = [
   "https://ialimentacion-qkgup5jop-ana-qrs-projects.vercel.app",
   "https://ialimentacion-3l5omzsbr-ana-qrs-projects.vercel.app",
   "https://ialimentacion-pt90mldnb-ana-qrs-projects.vercel.app",
-  "https://ialimentacion.es"
+  "https://ialimentacion.es",
+  "https://www.ialimentacion.es"
 ];
 
 app.use(cors({
