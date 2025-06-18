@@ -117,7 +117,6 @@ const Recetas = () => {
             >
               <option value="hibrido">Híbrido (Gemini → OpenAI)</option>
               <option value="gemini">Solo Gemini</option>
-              <option value="openai">Solo OpenAI</option>
             </select>
           </div>
         </div>
