@@ -26,10 +26,22 @@ const generarMensajeIA = async (req, res) => {
       return res.status(200).json({ mensaje: 'Tu lista está vacía.' });
     }
 
-    const prompt = `Tengo los siguientes productos en mi lista de la compra: ${productos.join(', ')}. 
-Redáctame una sola frase motivacional, breve y personalizada que me recomiende en qué supermercado hacer la compra, 
-destacando alguna ventaja (ahorro, salud, cercanía, etc.), como si fueras una IA experta en compras. 
-Si la ventaja es económica, dime cuánto dinero podría ahorrarme.`;
+    const prompt = `
+Soy una inteligencia artificial experta en compras. A continuación te paso una lista de productos del usuario: ${productos.join(', ')}.
+
+Quiero que analices en qué supermercado saldría más rentable hacer la compra en conjunto, teniendo en cuenta todos los productos, no solo uno.
+
+Compara entre supermercados comunes como Mercadona, Carrefour, DIA, Lidl y otros relevantes en España, suponiendo precios promedio actuales.
+
+Ten en cuenta estos criterios por orden de prioridad:
+1. Ahorro económico total en el conjunto de la compra.
+2. Relación calidad/precio si hay opciones similares.
+3. Disponibilidad de productos habituales (si un supermercado no suele tenerlos, descártalo).
+4. Ventajas adicionales si están muy igualados (cercanía, productos saludables, promociones...).
+
+Redáctame una sola frase breve, cercana y motivadora recomendando el supermercado más conveniente para esta lista concreta, explicando en qué se basa tu recomendación (por ejemplo: “ahorras X€” o “encuentras todo con mejor calidad”). Evita generalizaciones como “el más barato” si no lo puedes justificar.
+`;
+
 
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
     const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });

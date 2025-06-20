@@ -43,14 +43,23 @@ const generarRecomendacionesIA = async (req, res) => {
   }
 
   const prompt = `
-Tienes esta lista de productos: ${productos.join(", ")}.
-Basándote en la ${preferencias}, para cada producto:
-- Indica el supermercado ideal.
-- Justifica brevemente la elección.
-Devuélvelo solo como JSON, sin texto extra:
+Tengo la siguiente lista de productos: ${productos.join(", ")}.
+Basándote en la ${preferencias}, para cada producto haz lo siguiente:
+- Indica el supermercado más adecuado para comprarlo.
+- Estima un precio razonable y actual en euros (por ejemplo: 2.35€).
+- Justifica brevemente por qué recomiendas ese supermercado.
+
+Devuélvelo estrictamente en formato JSON, sin explicaciones ni adornos:
 [
-  { "producto": "...", "supermercado": "...", "motivo": "..." }
-]`.trim();
+  {
+    "producto": "Nombre del producto",
+    "supermercado": "Nombre del supermercado",
+    "precio": "X.XX€",
+    "motivo": "Justificación breve"
+  }
+]
+`.trim();
+
 
   const intentarConGemini = async () => {
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
